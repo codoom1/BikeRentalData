@@ -18,7 +18,7 @@ build_bike_rental_data(
 
 \item{end_date}{Last analysis date.}
 
-\item{raw_dir}{Directory for monthly trip files.}
+\item{raw_dir}{Directory for annual or monthly trip files.}
 
 \item{weather_cache}{CSV path used to cache weather records.}
 

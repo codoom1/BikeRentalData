@@ -10,6 +10,28 @@ Capital Bikeshare dataset used in:
 
 The package contains processing code—not the full third-party dataset.
 
+## Explore available data
+
+```r
+library(bikerentaldata)
+
+# Official archive coverage: annual files through 2017, monthly thereafter
+archives <- available_trip_data()
+range(archives$start_date)
+range(archives$end_date)
+
+# Current live system footprint
+current_system_info()
+
+# Historical station locations represented in downloaded files
+summarize_trip_locations("data/raw")
+summarize_trip_locations("data/raw", by = "file")
+```
+
+The official archive begins on September 20, 2010. Annual or quarterly legacy
+files are used through 2017; monthly archives are used from January 2018
+onward.
+
 ## Install
 
 ```r
@@ -60,7 +82,14 @@ to `prepare_bike_rentals()`.
 
 The lower-level functions `download_trip_files()`, `download_weather_data()`,
 `prepare_bike_rentals()`, `load_bike_rentals()`,
-`validate_bike_rentals()`, and `data_dictionary()` can be used independently.
+`validate_bike_rentals()`, `available_trip_data()`,
+`current_system_info()`, `summarize_trip_locations()`, and
+`data_dictionary()` can be used independently.
+
+Legacy files from 2010–2017 do not include station coordinates. The package
+preserves their rental counts and station identifiers, but returns `NA` for
+daily latitude and longitude. Coordinate-dependent analyses should use newer
+files or add an external station-coordinate reference.
 
 ## Data terms
 

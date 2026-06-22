@@ -2,7 +2,7 @@
 % Please edit documentation in R/download.R
 \name{download_trip_files}
 \alias{download_trip_files}
-\title{Download Capital Bikeshare monthly trip files}
+\title{Download Capital Bikeshare trip files}
 \usage{
 download_trip_files(
   start_date,
@@ -17,7 +17,7 @@ download_trip_files(
 
 \item{end_date}{Last date required.}
 
-\item{destination}{Directory for extracted monthly CSV files.}
+\item{destination}{Directory for extracted trip CSV files.}
 
 \item{overwrite}{Whether to replace existing files.}
 
@@ -27,6 +27,7 @@ download_trip_files(
 A character vector containing extracted CSV paths.
 }
 \description{
-Downloads official monthly ZIP archives and extracts one CSV per month.
+Downloads official annual archives for 2010--2017 and monthly archives for
+2018 onward. All CSV files contained in each archive are extracted.
 Existing extracted files are reused unless `overwrite = TRUE`.
 }

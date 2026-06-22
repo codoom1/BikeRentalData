@@ -14,7 +14,7 @@ prepare_bike_rentals(
 )
 }
 \arguments{
-\item{trip_directory}{Directory containing extracted monthly trip CSVs.}
+\item{trip_directory}{Directory containing extracted trip CSVs.}
 
 \item{weather}{A data frame or path to a weather CSV.}
 
@@ -30,6 +30,6 @@ prepare_bike_rentals(
 A validated tibble with one row per day.
 }
 \description{
-Aggregates monthly trip files, joins weather records by date, and adds
-calendar fields used by the published analysis.
+Aggregates annual or monthly trip files, joins weather records by date, and
+adds calendar fields used by the published analysis.
 }

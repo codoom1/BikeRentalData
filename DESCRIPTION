@@ -1,6 +1,6 @@
 Package: bikerentaldata
 Title: Build Daily Capital Bikeshare Analysis Data
-Version: 0.1.0
+Version: 0.2.0
 Authors@R:
     c(
       person(
@@ -10,11 +10,12 @@ Authors@R:
         email = "odoomchristopher22@gmail.com"
       )
     )
-Description: Downloads official Capital Bikeshare monthly trip archives,
-    aggregates trips into daily registered and casual rental counts, combines
-    them with daily weather observations, adds calendar variables, and
-    validates the resulting analysis data. The package contains processing
-    code but does not redistribute the full third-party dataset.
+Description: Discovers and downloads official Capital Bikeshare annual and
+    monthly trip archives, summarizes station locations, aggregates trips into
+    daily registered and casual rental counts, combines them with daily
+    weather observations, adds calendar variables, and validates the resulting
+    analysis data. The package contains processing code but does not
+    redistribute the full third-party dataset.
 License: MIT + file LICENSE
 URL: https://github.com/codoom1/BikeRentalData
 BugReports: https://github.com/codoom1/BikeRentalData/issues
@@ -22,6 +23,7 @@ Depends:
     R (>= 4.1)
 Imports:
     dplyr,
+    jsonlite,
     lubridate,
     purrr,
     readr,

@@ -77,3 +77,41 @@ test_that("mixed unused station identifiers do not create parsing warnings", {
   )
   expect_equal(result$total_rentals, 2L)
 })
+
+test_that("legacy annual schemas are supported without coordinates", {
+  trip_dir <- tempfile("legacy-trips-")
+  dir.create(trip_dir)
+
+  trips <- data.frame(
+    "Start date" = c("2010-09-20 08:00:00", "2010-09-20 09:00:00"),
+    "Start station number" = c("31208", "31209"),
+    "Member type" = c("Member", "Casual"),
+    check.names = FALSE
+  )
+  readr::write_csv(
+    trips,
+    file.path(trip_dir, "2010-capitalbikeshare-tripdata.csv")
+  )
+
+  weather <- data.frame(
+    date = as.Date("2010-09-20"),
+    Temp = 70,
+    Wind = 5,
+    Humidity = 50,
+    Barometer = 30,
+    Visibility = 10,
+    Weather = "Clear"
+  )
+
+  result <- prepare_bike_rentals(
+    trip_directory = trip_dir,
+    weather = weather,
+    start_date = "2010-09-20",
+    end_date = "2010-09-20"
+  )
+
+  expect_equal(result$registered, 1L)
+  expect_equal(result$casual, 1L)
+  expect_true(is.na(result$latitude))
+  expect_true(is.na(result$longitude))
+})

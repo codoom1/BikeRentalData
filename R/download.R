@@ -1,11 +1,12 @@
-#' Download Capital Bikeshare monthly trip files
+#' Download Capital Bikeshare trip files
 #'
-#' Downloads official monthly ZIP archives and extracts one CSV per month.
+#' Downloads official annual archives for 2010--2017 and monthly archives for
+#' 2018 onward. All CSV files contained in each archive are extracted.
 #' Existing extracted files are reused unless `overwrite = TRUE`.
 #'
 #' @param start_date First date required.
 #' @param end_date Last date required.
-#' @param destination Directory for extracted monthly CSV files.
+#' @param destination Directory for extracted trip CSV files.
 #' @param overwrite Whether to replace existing files.
 #' @param keep_zip Whether to retain downloaded ZIP archives.
 #'
@@ -18,31 +19,41 @@ download_trip_files <- function(
   overwrite = FALSE,
   keep_zip = FALSE
 ) {
-  months <- .month_sequence(start_date, end_date)
+  plan <- .archive_plan(start_date, end_date)
   dir.create(destination, recursive = TRUE, showWarnings = FALSE)
   archive_dir <- file.path(destination, "archives")
   dir.create(archive_dir, recursive = TRUE, showWarnings = FALSE)
 
-  output_paths <- character(length(months))
+  output_paths <- character()
 
-  for (index in seq_along(months)) {
-    month_id <- format(months[[index]], "%Y%m")
-    output_path <- file.path(
-      destination,
-      paste0(month_id, "-capitalbikeshare-tripdata.csv")
+  for (index in seq_len(nrow(plan))) {
+    archive_id <- plan$archive_id[[index]]
+    archive_name <- plan$archive_name[[index]]
+    archive_url <- plan$url[[index]]
+    manifest_path <- file.path(
+      archive_dir,
+      paste0(archive_id, "-extracted-files.txt")
     )
-    output_paths[[index]] <- output_path
 
-    if (file.exists(output_path) && !overwrite) {
-      message("Using existing ", output_path)
+    existing <- if (plan$format[[index]] == "annual") {
+      if (file.exists(manifest_path)) {
+        file.path(destination, readLines(manifest_path, warn = FALSE))
+      } else {
+        character()
+      }
+    } else {
+      file.path(
+        destination,
+        paste0(archive_id, "-capitalbikeshare-tripdata.csv")
+      )
+    }
+
+    if (length(existing) > 0L && all(file.exists(existing)) && !overwrite) {
+      message("Using existing files for ", archive_id)
+      output_paths <- c(output_paths, existing)
       next
     }
 
-    archive_name <- paste0(month_id, "-capitalbikeshare-tripdata.zip")
-    archive_url <- paste0(
-      "https://capitalbikeshare-data.s3.amazonaws.com/",
-      archive_name
-    )
     archive_path <- file.path(archive_dir, archive_name)
 
     message("Downloading ", archive_url)
@@ -62,22 +73,24 @@ download_trip_files <- function(
       stop("No CSV file found in ", archive_name, ".", call. = FALSE)
     }
 
-    temp_dir <- tempfile("bikerentaldata-unzip-")
-    dir.create(temp_dir)
-    on.exit(unlink(temp_dir, recursive = TRUE, force = TRUE), add = TRUE)
-    utils::unzip(archive_path, files = csv_names[[1]], exdir = temp_dir)
-    extracted_path <- file.path(temp_dir, csv_names[[1]])
-
-    if (!file.copy(extracted_path, output_path, overwrite = TRUE)) {
-      stop("Could not create ", output_path, ".", call. = FALSE)
+    if (overwrite && length(existing) > 0L) {
+      unlink(existing)
     }
+
+    utils::unzip(archive_path, files = csv_names, exdir = destination)
+    extracted_paths <- file.path(destination, csv_names)
+    if (!all(file.exists(extracted_paths))) {
+      stop("Could not extract all CSV files from ", archive_name, ".", call. = FALSE)
+    }
+    output_paths <- c(output_paths, extracted_paths)
+    writeLines(csv_names, manifest_path)
 
     if (!keep_zip) {
       unlink(archive_path)
     }
   }
 
-  normalizePath(output_paths, mustWork = TRUE)
+  normalizePath(unique(output_paths), mustWork = TRUE)
 }
 
 #' Download daily historical weather observations

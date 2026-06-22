@@ -27,9 +27,115 @@
   )
 }
 
+.archive_plan <- function(start_date, end_date) {
+  start_date <- .as_date(start_date, "start_date")
+  end_date <- .as_date(end_date, "end_date")
+  if (start_date > end_date) {
+    stop("`start_date` must not be later than `end_date`.", call. = FALSE)
+  }
+  if (start_date < as.Date("2010-09-20")) {
+    stop(
+      "Capital Bikeshare trip data begin on 2010-09-20.",
+      call. = FALSE
+    )
+  }
+
+  years <- seq.int(
+    as.integer(format(start_date, "%Y")),
+    as.integer(format(end_date, "%Y"))
+  )
+  annual_years <- years[years <= 2017L]
+  monthly_start <- max(start_date, as.Date("2018-01-01"))
+  monthly <- if (monthly_start <= end_date) {
+    .month_sequence(monthly_start, end_date)
+  } else {
+    as.Date(character())
+  }
+
+  dplyr::bind_rows(
+    if (length(annual_years)) {
+      tibble::tibble(
+        archive_id = as.character(annual_years),
+        format = "annual",
+        start_date = as.Date(paste0(annual_years, "-01-01")),
+        end_date = as.Date(paste0(annual_years, "-12-31"))
+      )
+    },
+    if (length(monthly)) {
+      tibble::tibble(
+        archive_id = format(monthly, "%Y%m"),
+        format = "monthly",
+        start_date = monthly,
+        end_date = lubridate::ceiling_date(monthly, "month") - 1
+      )
+    }
+  ) |>
+    dplyr::mutate(
+      archive_name = paste0(
+        archive_id,
+        "-capitalbikeshare-tripdata.zip"
+      ),
+      url = paste0(
+        "https://capitalbikeshare-data.s3.amazonaws.com/",
+        archive_name
+      )
+    )
+}
+
+.trip_paths_for_range <- function(directory, start_date, end_date) {
+  plan <- .archive_plan(start_date, end_date)
+  paths <- character()
+
+  for (index in seq_len(nrow(plan))) {
+    archive_id <- plan$archive_id[[index]]
+    if (plan$format[[index]] == "annual") {
+      annual_paths <- list.files(
+        directory,
+        pattern = paste0(
+          "^", archive_id,
+          "(Q[1-4])?-capitalbikeshare-tripdata[.]csv$"
+        ),
+        full.names = TRUE
+      )
+      paths <- c(paths, sort(annual_paths))
+    } else {
+      paths <- c(
+        paths,
+        file.path(
+          directory,
+          paste0(archive_id, "-capitalbikeshare-tripdata.csv")
+        )
+      )
+    }
+  }
+
+  unique(paths)
+}
+
+.find_optional_column <- function(data, candidates) {
+  normalized_names <- gsub("[^a-z0-9]+", "_", tolower(names(data)))
+  normalized_candidates <- gsub(
+    "[^a-z0-9]+",
+    "_",
+    tolower(candidates)
+  )
+  indexes <- match(normalized_candidates, normalized_names, nomatch = 0L)
+  indexes <- indexes[indexes > 0L]
+
+  if (length(indexes) == 0L) {
+    return(NULL)
+  }
+
+  names(data)[indexes[[1]]]
+}
+
 .find_column <- function(data, candidates, label) {
-  normalized_names <- tolower(gsub("[^a-z0-9]+", "_", names(data)))
-  normalized_candidates <- tolower(gsub("[^a-z0-9]+", "_", candidates))
+  normalized_names <- gsub("[^a-z0-9]+", "_", tolower(names(data)))
+  normalized_candidates <- gsub(
+    "[^a-z0-9]+",
+    "_",
+    tolower(candidates)
+  )
   indexes <- match(normalized_candidates, normalized_names, nomatch = 0L)
   indexes <- indexes[indexes > 0L]
 
