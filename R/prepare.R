@@ -1,6 +1,13 @@
 .read_monthly_trips <- function(path, start_date, end_date) {
   message("Reading ", basename(path))
-  trips <- readr::read_csv(path, show_col_types = FALSE, progress = FALSE)
+  # Monthly source schemas contain mixed station-ID formats. Read raw values
+  # as text and explicitly convert only the fields used by this package.
+  trips <- readr::read_csv(
+    path,
+    col_types = readr::cols(.default = readr::col_character()),
+    show_col_types = FALSE,
+    progress = FALSE
+  )
 
   start_time_column <- .find_column(
     trips,
