@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this package, please cite the associated published article."
+title: "bikerentaldata: Build Daily Capital Bikeshare Analysis Data"
+type: software
+authors:
+  - family-names: Odoom
+    given-names: Christopher
+repository-code: "https://github.com/codoom1/BikeRentalData"
+license: MIT
+version: 0.1.0
+preferred-citation:
+  type: article
+  title: "Modeling of the daily dynamics in bike rental system using weather and calendar conditions: A semi-parametric approach"
+  authors:
+    - family-names: Odoom
+      given-names: Christopher
+    - family-names: Boateng
+      given-names: Alexander
+    - family-names: Fobi Mensah
+      given-names: Sarah
+    - family-names: Maposa
+      given-names: Daniel
+  journal: Scientific African
+  volume: 24
+  year: 2024
+  doi: "10.1016/j.sciaf.2024.e02211"
+  start: e02211

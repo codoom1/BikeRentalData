@@ -1,0 +1,11 @@
+.DS_Store
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+*.Rcheck/
+*.tar.gz
+data-raw/
+raw-data/
+processed-data/
+revdep/

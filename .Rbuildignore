@@ -1,0 +1,8 @@
+^\.github$
+^\.git$
+^CITATION\.cff$
+^DATA_LICENSE\.md$
+^LICENSE\.md$
+^README\.md$
+^bikerentaldata_.*\.tar\.gz$
+^bikerentaldata\.Rcheck$
