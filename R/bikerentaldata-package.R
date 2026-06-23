@@ -1,47 +1,59 @@
-#' bikerentaldata: Capital Bikeshare data tools
+#' bikerentaldata: Historical U.S. bike-share trip data tools
 #'
 #' `bikerentaldata` downloads and standardizes historical trip data from
 #' Capital Bikeshare, Citi Bike, Divvy, and Bay Wheels without bundling the
 #' full third-party datasets.
 #'
-#' @section Main workflow:
-#' Use [build_bike_rental_data()] to download trip archives, retrieve weather
-#' observations, prepare daily records, validate them, and save a processed
-#' CSV. For more control, use [download_trip_files()],
-#' [download_weather_data()], and [prepare_bike_rentals()] separately.
-#' Use [load_trip_data()] and [standardize_trips()] for multi-system,
-#' trip-level research, and [trip_data_dictionary()] for field definitions.
+#' @section Quick start:
+#' 1. Run [available_systems()] to list supported systems.
+#' 2. Run [available_trip_data()] to inspect archive coverage.
+#' 3. Run [download_trip_files()] for a small date range.
+#' 4. Run [load_trip_data()] to read and standardize the downloaded CSV files.
+#' 5. Run [trip_data_dictionary()] to inspect the output fields.
 #'
-#' @section Data discovery:
-#' Use [available_trip_data()] to inspect official archive coverage,
-#' [current_system_info()] to see the current station and jurisdiction
-#' footprint, and [summarize_trip_locations()] to count station locations in
-#' downloaded historical files.
+#' @section Supported systems:
+#' Valid system identifiers are `"capital"` (Washington, D.C.),
+#' `"citibike"` (New York City), `"divvy"` (Chicago), and `"baywheels"`
+#' (San Francisco Bay Area).
 #'
-#' @section Loading and validation:
-#' Use [load_bike_rentals()] to read processed data,
-#' [validate_bike_rentals()] to check its structure, and [data_dictionary()] to
-#' inspect variable definitions.
+#' @section Capital Bikeshare paper workflow:
+#' [build_bike_rental_data()] downloads Capital Bikeshare trips and weather,
+#' prepares daily records, validates them, and optionally writes a processed
+#' CSV. [load_bike_rentals()] and [validate_bike_rentals()] work with that
+#' daily dataset.
 #'
 #' @section Legacy support:
 #' Archive structures vary by system and year. The standardizer supports the
 #' recent common Lyft schema and common legacy column names. Some legacy files
 #' do not include bike type or coordinates, so unavailable fields are `NA`.
 #'
+#' @section Large downloads:
+#' Inspect [available_trip_data()] before downloading. Some archives are large,
+#' particularly annual Citi Bike archives. Use a recent one-month range and
+#' the `n_max` argument to [load_trip_data()] when testing the package.
+#'
 #' @section Data licensing:
 #' The package's MIT license applies only to original software. Capital
-#' Bikeshare-system and weather records remain subject to their source terms.
+#' Bikeshare, Citi Bike, Divvy, Bay Wheels, and weather records remain subject
+#' to their source terms.
 #'
 #' @seealso
-#' [build_bike_rental_data()], [available_trip_data()],
-#' [current_system_info()], [summarize_trip_locations()]
+#' [available_systems()], [available_trip_data()], [download_trip_files()],
+#' [load_trip_data()], [trip_data_dictionary()]
 #'
 #' @examples
-#' data_dictionary()
+#' available_systems()
+#' trip_data_dictionary()
 #'
 #' \dontrun{
-#' available_trip_data()
-#' current_system_info()
+#' archives <- available_trip_data("divvy")
+#' paths <- download_trip_files(
+#'   system = "divvy",
+#'   start_date = "2024-01-01",
+#'   end_date = "2024-01-31",
+#'   destination = "data/divvy"
+#' )
+#' trips <- load_trip_data(paths, system = "divvy", n_max = 1000)
 #' }
 #'
 #' @docType package

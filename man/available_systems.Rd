@@ -11,5 +11,10 @@ A tibble with system identifiers, names, cities, and official data
 pages.
 }
 \description{
-List supported historical bike-share systems
+Returns the identifiers accepted by the \code{system} argument in
+\code{\link[=available_trip_data]{available_trip_data()}}, \code{\link[=download_trip_files]{download_trip_files()}}, \code{\link[=load_trip_data]{load_trip_data()}}, and
+\code{\link[=standardize_trips]{standardize_trips()}}.
+}
+\examples{
+available_systems()
 }

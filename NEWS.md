@@ -1,3 +1,10 @@
+# bikerentaldata 0.3.1
+
+- Rewrote the README around a simple install-and-quick-start workflow.
+- Expanded package-level help for supported systems, large downloads, legacy
+  fields, and the Capital Bikeshare paper workflow.
+- Separated ordinary user installation from package-development instructions.
+
 # bikerentaldata 0.3.0
 
 - Added historical trip support for Citi Bike, Divvy, and Bay Wheels.

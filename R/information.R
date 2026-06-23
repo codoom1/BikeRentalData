@@ -3,8 +3,8 @@
 #' Queries the selected system's official archive and returns available annual,
 #' quarterly, or monthly trip files.
 #'
-#' @param system One of `"capital"`, `"citibike"`, `"divvy"`, or
-#'   `"baywheels"`. Defaults to `"capital"` for backward compatibility.
+#' @param system System identifier from [available_systems()]: `"capital"`,
+#'   `"citibike"`, `"divvy"`, or `"baywheels"`. Defaults to `"capital"`.
 #' @return A tibble containing archive name, format, period, and download URL.
 #'
 #' @examples

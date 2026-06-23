@@ -1,95 +1,153 @@
 # bikerentaldata
 
-`bikerentaldata` is an R package for downloading and standardizing historical
-trip data from:
+`bikerentaldata` downloads and standardizes official historical trip data
+from four U.S. bike-share systems:
 
-- Capital Bikeshare — Washington, D.C.
-- Citi Bike — New York City
-- Divvy — Chicago
-- Bay Wheels — San Francisco Bay Area
+| System ID | System | Area |
+|---|---|---|
+| `"capital"` | Capital Bikeshare | Washington, D.C. region |
+| `"citibike"` | Citi Bike | New York City |
+| `"divvy"` | Divvy | Chicago |
+| `"baywheels"` | Bay Wheels | San Francisco Bay Area |
 
-It also prepares the daily Capital Bikeshare dataset used in:
+The package returns a common trip-level structure containing bike type,
+member/casual rider type, trip duration, stations, and coordinates when those
+fields are available in the source data.
 
-> Odoom, C., Boateng, A., Fobi Mensah, S., & Maposa, D. (2024). Modeling of
-> the daily dynamics in bike rental system using weather and calendar
-> conditions: A semi-parametric approach. *Scientific African, 24*, e02211.
-> <https://doi.org/10.1016/j.sciaf.2024.e02211>
+## Installation
 
-The package contains processing code—not the full third-party dataset.
+Install the current GitHub release:
 
-## Explore available data
+```r
+install.packages("pak")
+pak::pak("codoom1/BikeRentalData")
+```
+
+Load and verify it:
+
+```r
+library(bikerentaldata)
+packageVersion("bikerentaldata")
+```
+
+Update an existing installation:
+
+```r
+pak::pak("codoom1/BikeRentalData", upgrade = TRUE)
+```
+
+If you are working inside an `renv` project, use `renv::restore()` to install
+the version recorded by that project.
+
+## Five-minute quick start
+
+First, see the supported systems:
 
 ```r
 library(bikerentaldata)
 
-# Open the package overview in R
-?bikerentaldata
-
-# Supported systems
 available_systems()
-
-# Official archive coverage for one system
-archives <- available_trip_data("citibike")
-range(archives$start_date)
-range(archives$end_date)
-
-# Current live system footprint
-current_system_info()
-
-# Historical station locations represented in downloaded files
-summarize_trip_locations("data/raw")
-summarize_trip_locations("data/raw", by = "file")
 ```
 
-## Multi-system trip workflow
+Check which archives are available before downloading:
+
+```r
+archives <- available_trip_data("divvy")
+
+head(archives)
+range(archives$start_date)
+range(archives$end_date)
+```
+
+Download one month:
 
 ```r
 paths <- download_trip_files(
   system = "divvy",
   start_date = "2024-01-01",
-  end_date = "2024-03-31",
+  end_date = "2024-01-31",
   destination = "data/divvy"
 )
+```
 
+Load and standardize the trips:
+
+```r
 trips <- load_trip_data(
   paths,
   system = "divvy"
 )
 
+head(trips)
 dplyr::count(trips, bike_type, rider_type)
+summary(trips$duration_minutes)
 ```
 
-The standardized result includes system, city, ride ID, bike type, start/end
-times, duration, station identifiers and names, coordinates, and member/casual
-rider type. Fields unavailable in legacy source files are returned as `NA`.
-Use `trip_data_dictionary()` for full field definitions.
-
-Note that Citi Bike's official 2013–2023 archives are annual and can be large;
-its 2024+ archives are monthly. Check `available_trip_data("citibike")` before
-downloading.
-
-## Install
+View definitions for every standardized field:
 
 ```r
-install.packages("remotes")
-remotes::install_github("codoom1/BikeRentalData")
+trip_data_dictionary()
 ```
 
-For local development:
+## Standardized output
+
+`load_trip_data()` returns:
+
+- system name and city;
+- ride ID and bike type;
+- start/end timestamps and duration;
+- origin/destination station IDs and names;
+- start/end coordinates; and
+- standardized rider type: `"member"` or `"casual"`.
+
+Legacy source files do not always contain every field. Unavailable bike types,
+coordinates, or ride IDs are returned as `NA`.
+
+## Working with another system
+
+Only the `system` argument and destination need to change:
 
 ```r
-install.packages(
-  "/path/to/BikeRentalData",
-  repos = NULL,
-  type = "source"
+capital_paths <- download_trip_files(
+  system = "capital",
+  start_date = "2020-04-01",
+  end_date = "2020-04-30",
+  destination = "data/capital"
+)
+
+capital_trips <- load_trip_data(
+  capital_paths,
+  system = "capital"
 )
 ```
 
-## Build analysis-ready data
+Valid system identifiers are `"capital"`, `"citibike"`, `"divvy"`, and
+`"baywheels"`.
+
+## Download-size warning
+
+Always inspect `available_trip_data()` before downloading. Some historical
+archives are large. In particular, Citi Bike's 2013–2023 archives are annual;
+its 2024+ archives are monthly.
+
+For a quick trial, request one recent month and use `n_max`:
 
 ```r
-library(bikerentaldata)
+sample_trips <- load_trip_data(
+  paths,
+  system = "divvy",
+  n_max = 1000
+)
+```
 
+Downloaded trip files are third-party data and should normally remain outside
+version control.
+
+## Capital Bikeshare paper workflow
+
+The package can also rebuild daily Capital Bikeshare analysis data:
+
+```r
 bike_data <- build_bike_rental_data(
   start_date = "2020-04-01",
   end_date = "2023-05-31",
@@ -99,35 +157,55 @@ bike_data <- build_bike_rental_data(
 )
 ```
 
-This workflow:
+Fresh builds use Washington National Airport ASOS weather observations from
+the Iowa Environmental Mesonet. The published paper dataset used Time and
+Date weather records, so fresh weather summaries may differ slightly.
 
-1. downloads official annual or monthly Capital Bikeshare ZIP archives;
-2. extracts and reads their trip CSV files;
-3. retrieves or reuses cached Washington National Airport ASOS observations
-   from the Iowa Environmental Mesonet;
-4. aggregates registered, casual, and total rentals by date;
-5. joins trip and weather records by date;
-6. adds season, holiday, weekday, and working-day variables; and
-7. validates and optionally saves the result.
+Associated publication:
 
-The published repository's bundled processed dataset used historical weather
-records from Time and Date. Fresh package builds use the stable IEM ASOS
-archive and may therefore produce slightly different weather summaries. To
-reproduce a specific historical build, pass its cached weather CSV directly
-to `prepare_bike_rentals()`.
+> Odoom, C., Boateng, A., Fobi Mensah, S., & Maposa, D. (2024). Modeling of
+> the daily dynamics in bike rental system using weather and calendar
+> conditions: A semi-parametric approach. *Scientific African, 24*, e02211.
+> <https://doi.org/10.1016/j.sciaf.2024.e02211>
 
-The lower-level functions `available_systems()`, `available_trip_data()`,
-`download_trip_files()`, `load_trip_data()`, `standardize_trips()`,
-`download_weather_data()`, `prepare_bike_rentals()`,
-`load_bike_rentals()`, `validate_bike_rentals()`,
-`current_system_info()`, `summarize_trip_locations()`, and
-`data_dictionary()` can be used independently.
+## Additional information
 
-Legacy schemas vary by system. The package preserves available fields and
-returns `NA` where bike type, coordinates, or ride IDs were not published.
+```r
+?bikerentaldata
+current_system_info()
+summarize_trip_locations("data/capital", system = "capital")
+```
+
+Function help is available through commands such as:
+
+```r
+?download_trip_files
+?load_trip_data
+?standardize_trips
+```
 
 ## Data terms
 
+The package contains processing code, not the complete third-party datasets.
 Each operator's data remain governed by its own license or data-use policy.
-The package does not grant rights in any operator's trip data or weather data.
-Review [DATA_LICENSE.md](DATA_LICENSE.md) before use.
+Review [DATA_LICENSE.md](DATA_LICENSE.md) before downloading, publishing, or
+redistributing data.
+
+## For package developers
+
+Clone the repository and install the local source:
+
+```r
+install.packages(
+  "/path/to/BikeRentalData",
+  repos = NULL,
+  type = "source"
+)
+```
+
+Run package tests and checks:
+
+```r
+testthat::test_local()
+devtools::check()
+```

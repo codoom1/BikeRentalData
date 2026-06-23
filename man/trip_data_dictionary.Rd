@@ -13,3 +13,6 @@ A tibble describing every field returned by
 \description{
 Standardized trip-data dictionary
 }
+\examples{
+trip_data_dictionary()
+}

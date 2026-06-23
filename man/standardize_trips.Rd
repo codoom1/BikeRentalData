@@ -7,10 +7,9 @@
 standardize_trips(data, system)
 }
 \arguments{
-\item{data}{A trip data frame.}
+\item{data}{A raw trip data frame read from an official source CSV.}
 
-\item{system}{One of \code{"capital"}, \code{"citibike"}, \code{"divvy"}, or
-\code{"baywheels"}.}
+\item{system}{System identifier from \code{\link[=available_systems]{available_systems()}}.}
 }
 \value{
 A tibble with standardized trip, station, coordinate, bike-type,
@@ -19,4 +18,21 @@ rider-type, and duration fields.
 \description{
 Converts recent Lyft-format files and common legacy schemas from Capital
 Bikeshare, Citi Bike, Divvy, and Bay Wheels into one trip-level structure.
+}
+\details{
+Recent files from all four systems use a similar schema. The function also
+recognizes common historical names such as \code{starttime}, \code{stoptime},
+\code{usertype}, \code{from_station_id}, and \code{tripduration}. Source fields that were
+not published are returned as \code{NA}.
+}
+\examples{
+raw <- data.frame(
+  ride_id = "ride-1",
+  rideable_type = "classic_bike",
+  started_at = "2024-01-01 10:00:00",
+  ended_at = "2024-01-01 10:12:00",
+  member_casual = "member"
+)
+
+standardize_trips(raw, system = "capital")
 }

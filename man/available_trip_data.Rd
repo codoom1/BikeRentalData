@@ -7,8 +7,8 @@
 available_trip_data(system = "capital")
 }
 \arguments{
-\item{system}{One of \code{"capital"}, \code{"citibike"}, \code{"divvy"}, or
-\code{"baywheels"}. Defaults to \code{"capital"} for backward compatibility.}
+\item{system}{System identifier from \code{\link[=available_systems]{available_systems()}}: \code{"capital"},
+\code{"citibike"}, \code{"divvy"}, or \code{"baywheels"}. Defaults to \code{"capital"}.}
 }
 \value{
 A tibble containing archive name, format, period, and download URL.

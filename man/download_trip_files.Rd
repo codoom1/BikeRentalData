@@ -14,18 +14,19 @@ download_trip_files(
 )
 }
 \arguments{
-\item{start_date}{First date required.}
+\item{start_date}{First trip date required, coercible to \code{Date}.}
 
-\item{end_date}{Last date required.}
+\item{end_date}{Last trip date required, coercible to \code{Date}.}
 
-\item{destination}{Directory for extracted trip CSV files.}
+\item{destination}{Directory for extracted trip CSV files. It is created
+when necessary.}
 
-\item{overwrite}{Whether to replace existing files.}
+\item{overwrite}{Whether to replace previously extracted files.}
 
-\item{keep_zip}{Whether to retain downloaded ZIP archives.}
+\item{keep_zip}{Whether to retain downloaded ZIP archives after extraction.}
 
-\item{system}{One of \code{"capital"}, \code{"citibike"}, \code{"divvy"}, or
-\code{"baywheels"}.}
+\item{system}{System identifier from \code{\link[=available_systems]{available_systems()}}: \code{"capital"},
+\code{"citibike"}, \code{"divvy"}, or \code{"baywheels"}.}
 }
 \value{
 A character vector containing extracted CSV paths.
@@ -33,4 +34,20 @@ A character vector containing extracted CSV paths.
 \description{
 Downloads official archives for a supported system and extracts all trip
 CSV files whose archive periods overlap the requested date range.
+}
+\details{
+Archive periods differ by operator and year. A requested one-month period
+can therefore require downloading a larger quarterly or annual archive.
+Inspect \code{\link[=available_trip_data]{available_trip_data()}} before downloading, especially for Citi
+Bike's annual 2013--2023 archives.
+}
+\examples{
+\dontrun{
+paths <- download_trip_files(
+  system = "divvy",
+  start_date = "2024-01-01",
+  end_date = "2024-01-31",
+  destination = "data/divvy"
+)
+}
 }

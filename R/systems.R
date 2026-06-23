@@ -40,8 +40,15 @@
 
 #' List supported historical bike-share systems
 #'
+#' Returns the identifiers accepted by the `system` argument in
+#' [available_trip_data()], [download_trip_files()], [load_trip_data()], and
+#' [standardize_trips()].
+#'
 #' @return A tibble with system identifiers, names, cities, and official data
 #'   pages.
+#'
+#' @examples
+#' available_systems()
 #' @export
 available_systems <- function() {
   .system_metadata |>

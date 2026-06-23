@@ -7,16 +7,17 @@
 load_trip_data(path, system, start_date = NULL, end_date = NULL, n_max = Inf)
 }
 \arguments{
-\item{path}{A CSV path, vector of CSV paths, or directory.}
+\item{path}{A CSV path, vector of CSV paths, or directory containing
+extracted trip CSV files.}
 
-\item{system}{One of \code{"capital"}, \code{"citibike"}, \code{"divvy"}, or
-\code{"baywheels"}.}
+\item{system}{System identifier from \code{\link[=available_systems]{available_systems()}}.}
 
-\item{start_date}{Optional first trip date to retain.}
+\item{start_date}{Optional first trip date to retain after loading.}
 
-\item{end_date}{Optional last trip date to retain.}
+\item{end_date}{Optional last trip date to retain after loading.}
 
-\item{n_max}{Maximum rows to read from each file.}
+\item{n_max}{Maximum rows to read from each file. Use a small value when
+testing large archives.}
 }
 \value{
 A standardized trip-level tibble.
@@ -24,4 +25,14 @@ A standardized trip-level tibble.
 \description{
 Reads one CSV, a vector of CSVs, or all CSVs in a directory and combines
 them into the common trip schema returned by \code{\link[=standardize_trips]{standardize_trips()}}.
+}
+\examples{
+\dontrun{
+trips <- load_trip_data(
+  "data/divvy",
+  system = "divvy",
+  n_max = 1000
+)
+head(trips)
+}
 }

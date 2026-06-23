@@ -3,15 +3,32 @@
 #' Downloads official archives for a supported system and extracts all trip
 #' CSV files whose archive periods overlap the requested date range.
 #'
-#' @param start_date First date required.
-#' @param end_date Last date required.
-#' @param destination Directory for extracted trip CSV files.
-#' @param overwrite Whether to replace existing files.
-#' @param keep_zip Whether to retain downloaded ZIP archives.
-#' @param system One of `"capital"`, `"citibike"`, `"divvy"`, or
-#'   `"baywheels"`.
+#' @param start_date First trip date required, coercible to `Date`.
+#' @param end_date Last trip date required, coercible to `Date`.
+#' @param destination Directory for extracted trip CSV files. It is created
+#'   when necessary.
+#' @param overwrite Whether to replace previously extracted files.
+#' @param keep_zip Whether to retain downloaded ZIP archives after extraction.
+#' @param system System identifier from [available_systems()]: `"capital"`,
+#'   `"citibike"`, `"divvy"`, or `"baywheels"`.
 #'
 #' @return A character vector containing extracted CSV paths.
+#'
+#' @details
+#' Archive periods differ by operator and year. A requested one-month period
+#' can therefore require downloading a larger quarterly or annual archive.
+#' Inspect [available_trip_data()] before downloading, especially for Citi
+#' Bike's annual 2013--2023 archives.
+#'
+#' @examples
+#' \dontrun{
+#' paths <- download_trip_files(
+#'   system = "divvy",
+#'   start_date = "2024-01-01",
+#'   end_date = "2024-01-31",
+#'   destination = "data/divvy"
+#' )
+#' }
 #' @export
 download_trip_files <- function(
   start_date,

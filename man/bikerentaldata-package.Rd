@@ -4,35 +4,36 @@
 \name{bikerentaldata-package}
 \alias{bikerentaldata-package}
 \alias{bikerentaldata}
-\title{bikerentaldata: Capital Bikeshare data tools}
+\title{bikerentaldata: Historical U.S. bike-share trip data tools}
 \description{
 \code{bikerentaldata} downloads and standardizes historical trip data from
 Capital Bikeshare, Citi Bike, Divvy, and Bay Wheels without bundling the
 full third-party datasets.
 }
-\section{Main workflow}{
+\section{Quick start}{
 
-Use \code{\link[=build_bike_rental_data]{build_bike_rental_data()}} to download trip archives, retrieve weather
-observations, prepare daily records, validate them, and save a processed
-CSV. For more control, use \code{\link[=download_trip_files]{download_trip_files()}},
-\code{\link[=download_weather_data]{download_weather_data()}}, and \code{\link[=prepare_bike_rentals]{prepare_bike_rentals()}} separately.
-Use \code{\link[=load_trip_data]{load_trip_data()}} and \code{\link[=standardize_trips]{standardize_trips()}} for multi-system,
-trip-level research, and \code{\link[=trip_data_dictionary]{trip_data_dictionary()}} for field definitions.
+\enumerate{
+\item Run \code{\link[=available_systems]{available_systems()}} to list supported systems.
+\item Run \code{\link[=available_trip_data]{available_trip_data()}} to inspect archive coverage.
+\item Run \code{\link[=download_trip_files]{download_trip_files()}} for a small date range.
+\item Run \code{\link[=load_trip_data]{load_trip_data()}} to read and standardize the downloaded CSV files.
+\item Run \code{\link[=trip_data_dictionary]{trip_data_dictionary()}} to inspect the output fields.
+}
 }
 
-\section{Data discovery}{
+\section{Supported systems}{
 
-Use \code{\link[=available_trip_data]{available_trip_data()}} to inspect official archive coverage,
-\code{\link[=current_system_info]{current_system_info()}} to see the current station and jurisdiction
-footprint, and \code{\link[=summarize_trip_locations]{summarize_trip_locations()}} to count station locations in
-downloaded historical files.
+Valid system identifiers are \code{"capital"} (Washington, D.C.),
+\code{"citibike"} (New York City), \code{"divvy"} (Chicago), and \code{"baywheels"}
+(San Francisco Bay Area).
 }
 
-\section{Loading and validation}{
+\section{Capital Bikeshare paper workflow}{
 
-Use \code{\link[=load_bike_rentals]{load_bike_rentals()}} to read processed data,
-\code{\link[=validate_bike_rentals]{validate_bike_rentals()}} to check its structure, and \code{\link[=data_dictionary]{data_dictionary()}} to
-inspect variable definitions.
+\code{\link[=build_bike_rental_data]{build_bike_rental_data()}} downloads Capital Bikeshare trips and weather,
+prepares daily records, validates them, and optionally writes a processed
+CSV. \code{\link[=load_bike_rentals]{load_bike_rentals()}} and \code{\link[=validate_bike_rentals]{validate_bike_rentals()}} work with that
+daily dataset.
 }
 
 \section{Legacy support}{
@@ -42,24 +43,39 @@ recent common Lyft schema and common legacy column names. Some legacy files
 do not include bike type or coordinates, so unavailable fields are \code{NA}.
 }
 
+\section{Large downloads}{
+
+Inspect \code{\link[=available_trip_data]{available_trip_data()}} before downloading. Some archives are large,
+particularly annual Citi Bike archives. Use a recent one-month range and
+the \code{n_max} argument to \code{\link[=load_trip_data]{load_trip_data()}} when testing the package.
+}
+
 \section{Data licensing}{
 
 The package's MIT license applies only to original software. Capital
-Bikeshare-system and weather records remain subject to their source terms.
+Bikeshare, Citi Bike, Divvy, Bay Wheels, and weather records remain subject
+to their source terms.
 }
 
 \examples{
-data_dictionary()
+available_systems()
+trip_data_dictionary()
 
 \dontrun{
-available_trip_data()
-current_system_info()
+archives <- available_trip_data("divvy")
+paths <- download_trip_files(
+  system = "divvy",
+  start_date = "2024-01-01",
+  end_date = "2024-01-31",
+  destination = "data/divvy"
+)
+trips <- load_trip_data(paths, system = "divvy", n_max = 1000)
 }
 
 }
 \seealso{
-\code{\link[=build_bike_rental_data]{build_bike_rental_data()}}, \code{\link[=available_trip_data]{available_trip_data()}},
-\code{\link[=current_system_info]{current_system_info()}}, \code{\link[=summarize_trip_locations]{summarize_trip_locations()}}
+\code{\link[=available_systems]{available_systems()}}, \code{\link[=available_trip_data]{available_trip_data()}}, \code{\link[=download_trip_files]{download_trip_files()}},
+\code{\link[=load_trip_data]{load_trip_data()}}, \code{\link[=trip_data_dictionary]{trip_data_dictionary()}}
 }
 \author{
 \strong{Maintainer}: Christopher Odoom \email{odoomchristopher22@gmail.com}

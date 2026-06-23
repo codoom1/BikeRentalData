@@ -25,12 +25,28 @@
 #' Converts recent Lyft-format files and common legacy schemas from Capital
 #' Bikeshare, Citi Bike, Divvy, and Bay Wheels into one trip-level structure.
 #'
-#' @param data A trip data frame.
-#' @param system One of `"capital"`, `"citibike"`, `"divvy"`, or
-#'   `"baywheels"`.
+#' @param data A raw trip data frame read from an official source CSV.
+#' @param system System identifier from [available_systems()].
 #'
 #' @return A tibble with standardized trip, station, coordinate, bike-type,
 #'   rider-type, and duration fields.
+#'
+#' @details
+#' Recent files from all four systems use a similar schema. The function also
+#' recognizes common historical names such as `starttime`, `stoptime`,
+#' `usertype`, `from_station_id`, and `tripduration`. Source fields that were
+#' not published are returned as `NA`.
+#'
+#' @examples
+#' raw <- data.frame(
+#'   ride_id = "ride-1",
+#'   rideable_type = "classic_bike",
+#'   started_at = "2024-01-01 10:00:00",
+#'   ended_at = "2024-01-01 10:12:00",
+#'   member_casual = "member"
+#' )
+#'
+#' standardize_trips(raw, system = "capital")
 #' @export
 standardize_trips <- function(data, system) {
   if (!is.data.frame(data)) {
@@ -142,14 +158,25 @@ standardize_trips <- function(data, system) {
 #' Reads one CSV, a vector of CSVs, or all CSVs in a directory and combines
 #' them into the common trip schema returned by [standardize_trips()].
 #'
-#' @param path A CSV path, vector of CSV paths, or directory.
-#' @param system One of `"capital"`, `"citibike"`, `"divvy"`, or
-#'   `"baywheels"`.
-#' @param start_date Optional first trip date to retain.
-#' @param end_date Optional last trip date to retain.
-#' @param n_max Maximum rows to read from each file.
+#' @param path A CSV path, vector of CSV paths, or directory containing
+#'   extracted trip CSV files.
+#' @param system System identifier from [available_systems()].
+#' @param start_date Optional first trip date to retain after loading.
+#' @param end_date Optional last trip date to retain after loading.
+#' @param n_max Maximum rows to read from each file. Use a small value when
+#'   testing large archives.
 #'
 #' @return A standardized trip-level tibble.
+#'
+#' @examples
+#' \dontrun{
+#' trips <- load_trip_data(
+#'   "data/divvy",
+#'   system = "divvy",
+#'   n_max = 1000
+#' )
+#' head(trips)
+#' }
 #' @export
 load_trip_data <- function(
   path,
@@ -201,6 +228,9 @@ load_trip_data <- function(
 #'
 #' @return A tibble describing every field returned by
 #'   [standardize_trips()] and [load_trip_data()].
+#'
+#' @examples
+#' trip_data_dictionary()
 #' @export
 trip_data_dictionary <- function() {
   tibble::tribble(
