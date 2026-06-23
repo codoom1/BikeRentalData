@@ -30,6 +30,6 @@ build_bike_rental_data(
 A validated daily bike-rental tibble.
 }
 \description{
-Convenience wrapper around [download_trip_files()],
-[download_weather_data()], and [prepare_bike_rentals()].
+Convenience wrapper around \code{\link[=download_trip_files]{download_trip_files()}},
+\code{\link[=download_weather_data]{download_weather_data()}}, and \code{\link[=prepare_bike_rentals]{prepare_bike_rentals()}}.
 }

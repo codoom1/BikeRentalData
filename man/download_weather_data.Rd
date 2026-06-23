@@ -19,7 +19,7 @@ download_weather_data(
 \item{cache_file}{Optional CSV cache path.}
 
 \item{station}{ASOS station identifier. Defaults to Washington National
-Airport (`"DCA"`).}
+Airport (\code{"DCA"}).}
 }
 \value{
 A tibble with one weather record per date.

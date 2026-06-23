@@ -14,7 +14,7 @@ validate_bike_rentals(data, start_date = NULL, end_date = NULL)
 \item{end_date}{Optional expected last date.}
 }
 \value{
-Invisibly returns `TRUE`; otherwise throws an informative error.
+Invisibly returns \code{TRUE}; otherwise throws an informative error.
 }
 \description{
 Checks required columns, unique and continuous dates, nonnegative rental

@@ -13,3 +13,11 @@ A tibble containing archive name, format, period, and download URL.
 Queries the official Capital Bikeshare S3 archive and returns the currently
 available annual and monthly trip files.
 }
+\examples{
+\dontrun{
+archives <- available_trip_data()
+head(archives)
+range(archives$start_date)
+range(archives$end_date)
+}
+}

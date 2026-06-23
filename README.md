@@ -15,6 +15,9 @@ The package contains processing code—not the full third-party dataset.
 ```r
 library(bikerentaldata)
 
+# Open the package overview in R
+?bikerentaldata
+
 # Official archive coverage: annual files through 2017, monthly thereafter
 archives <- available_trip_data()
 range(archives$start_date)
@@ -65,7 +68,7 @@ bike_data <- build_bike_rental_data(
 
 This workflow:
 
-1. downloads official monthly Capital Bikeshare ZIP archives;
+1. downloads official annual or monthly Capital Bikeshare ZIP archives;
 2. extracts and reads their trip CSV files;
 3. retrieves or reuses cached Washington National Airport ASOS observations
    from the Iowa Environmental Mesonet;

@@ -4,6 +4,14 @@
 #' available annual and monthly trip files.
 #'
 #' @return A tibble containing archive name, format, period, and download URL.
+#'
+#' @examples
+#' \dontrun{
+#' archives <- available_trip_data()
+#' head(archives)
+#' range(archives$start_date)
+#' range(archives$end_date)
+#' }
 #' @export
 available_trip_data <- function() {
   endpoint <- "https://capitalbikeshare-data.s3.amazonaws.com/?list-type=2"
@@ -50,7 +58,17 @@ available_trip_data <- function() {
 #' Queries the public GBFS feed for the current station count and reports the
 #' eight jurisdictions served by Capital Bikeshare.
 #'
-#' @return A one-row tibble with station and jurisdiction information.
+#' @return A `bikerental_system_info` object. Printing the object displays the
+#'   station count and each jurisdiction on a separate line. Its elements can
+#'   also be accessed with `$`.
+#'
+#' @examples
+#' \dontrun{
+#' info <- current_system_info()
+#' info
+#' info$station_locations
+#' info$jurisdiction_names
+#' }
 #' @export
 current_system_info <- function() {
   endpoint <- paste0(
@@ -70,12 +88,33 @@ current_system_info <- function() {
     "City of Falls Church, VA"
   )
 
-  tibble::tibble(
-    station_locations = nrow(stations),
-    jurisdictions = length(jurisdiction_names),
-    jurisdiction_names = paste(jurisdiction_names, collapse = "; "),
-    feed_url = endpoint
+  structure(
+    list(
+      station_locations = nrow(stations),
+      jurisdiction_count = length(jurisdiction_names),
+      jurisdiction_names = jurisdiction_names,
+      feed_url = endpoint
+    ),
+    class = "bikerental_system_info"
   )
+}
+
+#' Print current Capital Bikeshare system information
+#'
+#' @param x A `bikerental_system_info` object.
+#' @param ... Additional arguments, currently unused.
+#'
+#' @return `x`, invisibly.
+#' @export
+print.bikerental_system_info <- function(x, ...) {
+  cat("Capital Bikeshare current system\n")
+  cat("  Station locations:", x$station_locations, "\n")
+  cat("  Jurisdictions:", x$jurisdiction_count, "\n")
+  for (jurisdiction in x$jurisdiction_names) {
+    cat("   -", jurisdiction, "\n")
+  }
+  cat("  Live feed:", x$feed_url, "\n")
+  invisible(x)
 }
 
 #' Summarize station locations in downloaded trip files
@@ -87,6 +126,12 @@ current_system_info <- function() {
 #' @param by Return an overall summary or one row per source file.
 #'
 #' @return A tibble containing file and station-location counts.
+#'
+#' @examples
+#' \dontrun{
+#' summarize_trip_locations("data/raw")
+#' summarize_trip_locations("data/raw", by = "file")
+#' }
 #' @export
 summarize_trip_locations <- function(
   trip_directory = file.path("data", "raw"),

@@ -1,3 +1,4 @@
+S3method(print,bikerental_system_info)
 export(build_bike_rental_data)
 export(available_trip_data)
 export(current_system_info)

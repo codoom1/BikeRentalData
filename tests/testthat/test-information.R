@@ -26,3 +26,21 @@ test_that("trip location summaries support legacy and modern station fields", {
   expect_equal(summary$unique_station_locations, 3L)
   expect_equal(by_file$station_locations, c(2L, 2L))
 })
+
+test_that("system information has readable structured output", {
+  info <- structure(
+    list(
+      station_locations = 847L,
+      jurisdiction_count = 2L,
+      jurisdiction_names = c("Washington, DC", "Arlington, VA"),
+      feed_url = "https://example.com"
+    ),
+    class = "bikerental_system_info"
+  )
+
+  output <- capture.output(print(info))
+  expect_true(any(grepl("Station locations: 847", output)))
+  expect_true(any(grepl("Washington, DC", output)))
+  expect_true(any(grepl("Arlington, VA", output)))
+  expect_equal(info$jurisdiction_count, 2L)
+})

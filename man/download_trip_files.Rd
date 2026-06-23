@@ -29,5 +29,5 @@ A character vector containing extracted CSV paths.
 \description{
 Downloads official annual archives for 2010--2017 and monthly archives for
 2018 onward. All CSV files contained in each archive are extracted.
-Existing extracted files are reused unless `overwrite = TRUE`.
+Existing extracted files are reused unless \code{overwrite = TRUE}.
 }

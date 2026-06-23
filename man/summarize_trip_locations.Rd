@@ -21,3 +21,9 @@ A tibble containing file and station-location counts.
 Counts distinct start-station identifiers represented in local annual or
 monthly Capital Bikeshare CSV files.
 }
+\examples{
+\dontrun{
+summarize_trip_locations("data/raw")
+summarize_trip_locations("data/raw", by = "file")
+}
+}

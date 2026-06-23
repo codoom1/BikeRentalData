@@ -7,9 +7,19 @@
 current_system_info()
 }
 \value{
-A one-row tibble with station and jurisdiction information.
+A \code{bikerental_system_info} object. Printing the object displays the
+station count and each jurisdiction on a separate line. Its elements can
+also be accessed with \code{$}.
 }
 \description{
 Queries the public GBFS feed for the current station count and reports the
 eight jurisdictions served by Capital Bikeshare.
+}
+\examples{
+\dontrun{
+info <- current_system_info()
+info
+info$station_locations
+info$jurisdiction_names
+}
 }

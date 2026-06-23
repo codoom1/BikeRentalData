@@ -1,3 +1,9 @@
+# bikerentaldata 0.2.1
+
+- Added package-level help available through `?bikerentaldata`.
+- Improved `current_system_info()` printing so all jurisdictions are visible.
+- Added usage examples and cross-references to information-function help.
+
 # bikerentaldata 0.2.0
 
 - Added `available_trip_data()` to list official annual and monthly archives.
