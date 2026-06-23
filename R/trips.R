@@ -11,13 +11,8 @@
 }
 
 .system_timezone <- function(system) {
-  switch(
-    .match_system(system),
-    capital = "America/New_York",
-    citibike = "America/New_York",
-    divvy = "America/Chicago",
-    baywheels = "America/Los_Angeles"
-  )
+  system <- .match_system(system)
+  .system_metadata$timezone[.system_metadata$system == system]
 }
 
 #' Standardize historical bike-share trips
@@ -234,24 +229,45 @@ load_trip_data <- function(
 #' @export
 trip_data_dictionary <- function() {
   tibble::tribble(
-    ~variable, ~type, ~description,
-    "system", "character", "Short system identifier",
-    "system_name", "character", "Public bike-share system name",
-    "city", "character", "Primary metropolitan area",
-    "ride_id", "character", "Source ride or trip identifier",
-    "bike_type", "character", "Published bike or rideable type",
-    "started_at", "POSIXct", "Trip start date and local time",
-    "ended_at", "POSIXct", "Trip end date and local time",
-    "duration_seconds", "double", "Published or calculated duration in seconds",
-    "duration_minutes", "double", "Trip duration in minutes",
-    "start_station_id", "character", "Origin station identifier",
-    "start_station_name", "character", "Origin station name",
-    "end_station_id", "character", "Destination station identifier",
-    "end_station_name", "character", "Destination station name",
-    "start_lat", "double", "Origin latitude",
-    "start_lng", "double", "Origin longitude",
-    "end_lat", "double", "Destination latitude",
-    "end_lng", "double", "Destination longitude",
-    "rider_type", "character", "Standardized member or casual category"
+    ~variable, ~type, ~source, ~description,
+    "system", "character", "base", "Short system identifier",
+    "system_name", "character", "base", "Public bike-share system name",
+    "city", "character", "base", "Primary metropolitan area",
+    "ride_id", "character", "base", "Source ride or trip identifier",
+    "bike_type", "character", "base", "Published bike or rideable type",
+    "started_at", "POSIXct", "base", "Trip start date and local time",
+    "ended_at", "POSIXct", "base", "Trip end date and local time",
+    "duration_seconds", "double", "base", "Published or calculated duration in seconds",
+    "duration_minutes", "double", "base", "Trip duration in minutes",
+    "start_station_id", "character", "base", "Origin station identifier",
+    "start_station_name", "character", "base", "Origin station name",
+    "end_station_id", "character", "base", "Destination station identifier",
+    "end_station_name", "character", "base", "Destination station name",
+    "start_lat", "double", "base", "Origin latitude",
+    "start_lng", "double", "base", "Origin longitude",
+    "end_lat", "double", "base", "Destination latitude",
+    "end_lng", "double", "base", "Destination longitude",
+    "rider_type", "character", "base", "Standardized member or casual category",
+    "trip_date", "Date", "calendar", "Local trip-start date",
+    "year", "integer", "calendar", "Calendar year",
+    "month", "integer", "calendar", "Calendar month",
+    "month_name", "character", "calendar", "Calendar month name",
+    "day", "integer", "calendar", "Day of month",
+    "weekday", "integer", "calendar", "Monday equals 1 and Sunday equals 7",
+    "weekday_name", "character", "calendar", "Weekday name",
+    "weekend", "logical", "calendar", "Saturday or Sunday indicator",
+    "hour", "integer", "calendar", "Local trip-start hour",
+    "time_of_day", "character", "calendar", "Trip-start time category",
+    "season", "character", "calendar", "Meteorological season",
+    "us_federal_holiday", "logical", "calendar", "Observed federal holiday indicator",
+    "holiday_name", "character", "calendar", "Observed federal holiday name",
+    "weather_station", "character", "weather", "ASOS airport station identifier",
+    "weather_temp_f", "double", "weather", "Daily mean temperature in Fahrenheit",
+    "weather_wind_mph", "double", "weather", "Daily mean wind speed in miles per hour",
+    "weather_humidity_pct", "double", "weather", "Daily mean relative humidity",
+    "weather_barometer_inhg", "double", "weather", "Daily mean altimeter pressure",
+    "weather_visibility_miles", "double", "weather", "Daily mean visibility",
+    "weather_precipitation_in", "double", "weather", "Reported daily precipitation",
+    "weather_conditions", "character", "weather", "Most frequent daily conditions"
   )
 }

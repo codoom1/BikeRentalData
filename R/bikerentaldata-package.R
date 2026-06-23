@@ -10,6 +10,8 @@
 #' 3. Run [download_trip_files()] for a small date range.
 #' 4. Run [load_trip_data()] to read and standardize the downloaded CSV files.
 #' 5. Run [trip_data_dictionary()] to inspect the output fields.
+#' Use [build_multicity_data()] to perform these steps for several systems in
+#' one call.
 #'
 #' @section Supported systems:
 #' Valid system identifiers are `"capital"` (Washington, D.C.),
@@ -21,6 +23,12 @@
 #' prepares daily records, validates them, and optionally writes a processed
 #' CSV. [load_bike_rentals()] and [validate_bike_rentals()] work with that
 #' daily dataset.
+#'
+#' @section Calendar and weather enrichment:
+#' [add_calendar_variables()] adds local calendar, time-of-day, season,
+#' weekend, and observed U.S. federal holiday fields.
+#' [add_weather_variables()] adds daily metro weather from default ASOS
+#' stations. Weather represents the metro area, not a rider's exact route.
 #'
 #' @section Legacy support:
 #' Archive structures vary by system and year. The standardizer supports the
@@ -39,7 +47,7 @@
 #'
 #' @seealso
 #' [available_systems()], [available_trip_data()], [download_trip_files()],
-#' [load_trip_data()], [trip_data_dictionary()]
+#' [load_trip_data()], [build_multicity_data()], [trip_data_dictionary()]
 #'
 #' @examples
 #' available_systems()

@@ -8,7 +8,9 @@ download_weather_data(
   start_date,
   end_date,
   cache_file = file.path("data", "processed", "weather_data.csv"),
-  station = "DCA"
+  station = NULL,
+  system = "capital",
+  timezone = NULL
 )
 }
 \arguments{
@@ -18,13 +20,19 @@ download_weather_data(
 
 \item{cache_file}{Optional CSV cache path.}
 
-\item{station}{ASOS station identifier. Defaults to Washington National
-Airport (\code{"DCA"}).}
+\item{station}{Optional ASOS station identifier. When \code{NULL}, the package
+uses the default station for \code{system}.}
+
+\item{system}{Supported system used to select a default station and time
+zone.}
+
+\item{timezone}{Optional IANA time zone. When \code{NULL}, the system default is
+used.}
 }
 \value{
 A tibble with one weather record per date.
 }
 \description{
-Retrieves and aggregates Washington National Airport ASOS observations from
-the Iowa Environmental Mesonet archive. Existing cache records are reused.
+Retrieves and aggregates daily ASOS observations from the Iowa
+Environmental Mesonet archive. Existing cache records are reused.
 }

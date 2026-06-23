@@ -137,14 +137,18 @@ download_trip_files <- function(
 
 #' Download daily historical weather observations
 #'
-#' Retrieves and aggregates Washington National Airport ASOS observations from
-#' the Iowa Environmental Mesonet archive. Existing cache records are reused.
+#' Retrieves and aggregates daily ASOS observations from the Iowa
+#' Environmental Mesonet archive. Existing cache records are reused.
 #'
 #' @param start_date First date required.
 #' @param end_date Last date required.
 #' @param cache_file Optional CSV cache path.
-#' @param station ASOS station identifier. Defaults to Washington National
-#'   Airport (`"DCA"`).
+#' @param station Optional ASOS station identifier. When `NULL`, the package
+#'   uses the default station for `system`.
+#' @param system Supported system used to select a default station and time
+#'   zone.
+#' @param timezone Optional IANA time zone. When `NULL`, the system default is
+#'   used.
 #'
 #' @return A tibble with one weather record per date.
 #' @export
@@ -152,15 +156,28 @@ download_weather_data <- function(
   start_date,
   end_date,
   cache_file = file.path("data", "processed", "weather_data.csv"),
-  station = "DCA"
+  station = NULL,
+  system = "capital",
+  timezone = NULL
 ) {
   start_date <- .as_date(start_date, "start_date")
   end_date <- .as_date(end_date, "end_date")
+  system <- .match_system(system)
+  metadata <- .system_metadata[.system_metadata$system == system, ]
+  if (is.null(station)) {
+    station <- metadata$weather_station
+  }
+  if (is.null(timezone)) {
+    timezone <- metadata$timezone
+  }
   dates <- seq(start_date, end_date, by = "day")
 
   if (!is.null(cache_file) && file.exists(cache_file)) {
     weather <- readr::read_csv(cache_file, show_col_types = FALSE)
     weather$date <- as.Date(weather$date)
+    if (!"Precipitation" %in% names(weather)) {
+      weather$Precipitation <- NA_real_
+    }
   } else {
     weather <- tibble::tibble(
       date = as.Date(character()),
@@ -169,6 +186,7 @@ download_weather_data <- function(
       Humidity = double(),
       Barometer = double(),
       Visibility = double(),
+      Precipitation = double(),
       Weather = character()
     )
   }
@@ -178,7 +196,8 @@ download_weather_data <- function(
     new_weather <- .download_iem_weather(
       min(missing_dates),
       max(missing_dates),
-      station = station
+      station = station,
+      timezone = timezone
     ) |>
       dplyr::filter(date %in% missing_dates)
 
@@ -201,7 +220,12 @@ download_weather_data <- function(
   weather
 }
 
-.download_iem_weather <- function(start_date, end_date, station) {
+.download_iem_weather <- function(
+  start_date,
+  end_date,
+  station,
+  timezone
+) {
   message(
     "Retrieving ASOS weather for ", start_date, " through ", end_date
   )
@@ -215,6 +239,7 @@ download_weather_data <- function(
     "data=sknt",
     "data=alti",
     "data=vsby",
+    "data=p01i",
     "data=wxcodes",
     "data=skyc1",
     paste0("year1=", format(start_date, "%Y")),
@@ -229,15 +254,49 @@ download_weather_data <- function(
     "minute2=0",
     paste0(
       "tz=",
-      utils::URLencode("America/New_York", reserved = TRUE)
+      utils::URLencode(timezone, reserved = TRUE)
     ),
     "format=onlycomma",
     "missing=empty",
     "trace=empty"
   )
   url <- paste0(endpoint, "?", paste(query, collapse = "&"))
+  download_path <- tempfile(fileext = ".csv")
+  on.exit(unlink(download_path), add = TRUE)
+  downloaded <- FALSE
+  for (attempt in 1:5) {
+    downloaded <- tryCatch(
+      {
+        status <- suppressWarnings(
+          utils::download.file(
+            url,
+            download_path,
+            mode = "wb",
+            quiet = TRUE
+          )
+        )
+        if (!identical(status, 0L)) {
+          stop("HTTP download returned status ", status, ".")
+        }
+        TRUE
+      },
+      error = function(error) {
+        if (attempt == 5L) {
+          stop(
+            "Weather download failed after 5 attempts: ",
+            conditionMessage(error),
+            call. = FALSE
+          )
+        }
+        Sys.sleep(2^attempt)
+        FALSE
+      }
+    )
+    if (downloaded) break
+  }
+
   observations <- readr::read_csv(
-    url,
+    download_path,
     show_col_types = FALSE,
     na = c("", "M")
   )
@@ -273,12 +332,17 @@ download_weather_data <- function(
       Humidity = mean(relh, na.rm = TRUE),
       Barometer = mean(alti, na.rm = TRUE),
       Visibility = mean(vsby, na.rm = TRUE),
+      Precipitation = if (all(is.na(p01i))) {
+        NA_real_
+      } else {
+        sum(p01i, na.rm = TRUE)
+      },
       Weather = .daily_mode(weather_text),
       .groups = "drop"
     ) |>
     dplyr::mutate(
       dplyr::across(
-        c(Temp, Wind, Humidity, Barometer, Visibility),
+        c(Temp, Wind, Humidity, Barometer, Visibility, Precipitation),
         ~ dplyr::if_else(is.nan(.x), NA_real_, .x)
       )
     ) |>

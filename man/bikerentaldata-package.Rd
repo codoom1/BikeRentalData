@@ -18,6 +18,8 @@ full third-party datasets.
 \item Run \code{\link[=download_trip_files]{download_trip_files()}} for a small date range.
 \item Run \code{\link[=load_trip_data]{load_trip_data()}} to read and standardize the downloaded CSV files.
 \item Run \code{\link[=trip_data_dictionary]{trip_data_dictionary()}} to inspect the output fields.
+Use \code{\link[=build_multicity_data]{build_multicity_data()}} to perform these steps for several systems in
+one call.
 }
 }
 
@@ -34,6 +36,14 @@ Valid system identifiers are \code{"capital"} (Washington, D.C.),
 prepares daily records, validates them, and optionally writes a processed
 CSV. \code{\link[=load_bike_rentals]{load_bike_rentals()}} and \code{\link[=validate_bike_rentals]{validate_bike_rentals()}} work with that
 daily dataset.
+}
+
+\section{Calendar and weather enrichment}{
+
+\code{\link[=add_calendar_variables]{add_calendar_variables()}} adds local calendar, time-of-day, season,
+weekend, and observed U.S. federal holiday fields.
+\code{\link[=add_weather_variables]{add_weather_variables()}} adds daily metro weather from default ASOS
+stations. Weather represents the metro area, not a rider's exact route.
 }
 
 \section{Legacy support}{
@@ -75,7 +85,7 @@ trips <- load_trip_data(paths, system = "divvy", n_max = 1000)
 }
 \seealso{
 \code{\link[=available_systems]{available_systems()}}, \code{\link[=available_trip_data]{available_trip_data()}}, \code{\link[=download_trip_files]{download_trip_files()}},
-\code{\link[=load_trip_data]{load_trip_data()}}, \code{\link[=trip_data_dictionary]{trip_data_dictionary()}}
+\code{\link[=load_trip_data]{load_trip_data()}}, \code{\link[=build_multicity_data]{build_multicity_data()}}, \code{\link[=trip_data_dictionary]{trip_data_dictionary()}}
 }
 \author{
 \strong{Maintainer}: Christopher Odoom \email{odoomchristopher22@gmail.com}

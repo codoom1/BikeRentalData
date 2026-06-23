@@ -7,8 +7,8 @@
 available_systems()
 }
 \value{
-A tibble with system identifiers, names, cities, and official data
-pages.
+A tibble with system identifiers, names, cities, default time zones,
+weather stations, and official data pages.
 }
 \description{
 Returns the identifiers accepted by the \code{system} argument in

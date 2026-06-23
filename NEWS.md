@@ -1,3 +1,11 @@
+# bikerentaldata 0.4.0
+
+- Added `build_multicity_data()` to download and combine multiple systems.
+- Added `add_calendar_variables()` with local date/time, weekend, season, and
+  observed U.S. federal holiday fields.
+- Added `add_weather_variables()` with city-specific daily ASOS weather.
+- Added default metro weather stations and time zones to `available_systems()`.
+
 # bikerentaldata 0.3.1
 
 - Rewrote the README around a simple install-and-quick-start workflow.

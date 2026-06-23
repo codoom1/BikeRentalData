@@ -1,15 +1,20 @@
 .system_metadata <- tibble::tribble(
-  ~system, ~name, ~city, ~archive_endpoint, ~system_data_url,
+  ~system, ~name, ~city, ~timezone, ~weather_station,
+  ~archive_endpoint, ~system_data_url,
   "capital", "Capital Bikeshare", "Washington, DC",
+  "America/New_York", "DCA",
   "https://capitalbikeshare-data.s3.amazonaws.com/?list-type=2&max-keys=1000",
   "https://capitalbikeshare.com/system-data",
   "citibike", "Citi Bike", "New York City",
+  "America/New_York", "LGA",
   "https://s3.amazonaws.com/tripdata?list-type=2&max-keys=1000",
   "https://citibikenyc.com/system-data",
   "divvy", "Divvy", "Chicago",
+  "America/Chicago", "ORD",
   "https://divvy-tripdata.s3.amazonaws.com/?list-type=2&max-keys=1000",
   "https://divvybikes.com/system-data",
   "baywheels", "Bay Wheels", "San Francisco Bay Area",
+  "America/Los_Angeles", "SFO",
   "https://s3.amazonaws.com/baywheels-data?list-type=2&max-keys=1000",
   "https://www.lyft.com/bikes/bay-wheels/system-data"
 )
@@ -44,15 +49,17 @@
 #' [available_trip_data()], [download_trip_files()], [load_trip_data()], and
 #' [standardize_trips()].
 #'
-#' @return A tibble with system identifiers, names, cities, and official data
-#'   pages.
+#' @return A tibble with system identifiers, names, cities, default time zones,
+#'   weather stations, and official data pages.
 #'
 #' @examples
 #' available_systems()
 #' @export
 available_systems <- function() {
   .system_metadata |>
-    dplyr::select(system, name, city, system_data_url)
+    dplyr::select(
+      system, name, city, timezone, weather_station, system_data_url
+    )
 }
 
 .list_archive_keys <- function(system) {
