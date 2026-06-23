@@ -1,0 +1,227 @@
+.trip_value <- function(data, candidates, default = NA_character_) {
+  column <- .find_optional_column(data, candidates)
+  if (is.null(column)) {
+    return(rep(default, nrow(data)))
+  }
+  as.character(data[[column]])
+}
+
+.numeric_trip_value <- function(data, candidates) {
+  suppressWarnings(as.numeric(.trip_value(data, candidates)))
+}
+
+.system_timezone <- function(system) {
+  switch(
+    .match_system(system),
+    capital = "America/New_York",
+    citibike = "America/New_York",
+    divvy = "America/Chicago",
+    baywheels = "America/Los_Angeles"
+  )
+}
+
+#' Standardize historical bike-share trips
+#'
+#' Converts recent Lyft-format files and common legacy schemas from Capital
+#' Bikeshare, Citi Bike, Divvy, and Bay Wheels into one trip-level structure.
+#'
+#' @param data A trip data frame.
+#' @param system One of `"capital"`, `"citibike"`, `"divvy"`, or
+#'   `"baywheels"`.
+#'
+#' @return A tibble with standardized trip, station, coordinate, bike-type,
+#'   rider-type, and duration fields.
+#' @export
+standardize_trips <- function(data, system) {
+  if (!is.data.frame(data)) {
+    stop("`data` must be a data frame.", call. = FALSE)
+  }
+  system <- .match_system(system)
+  metadata <- .system_metadata[.system_metadata$system == system, ]
+  timezone <- .system_timezone(system)
+
+  start_column <- .find_optional_column(
+    data,
+    c("started_at", "starttime", "start_time", "start_date")
+  )
+  end_column <- .find_optional_column(
+    data,
+    c("ended_at", "stoptime", "end_time", "end_date", "stop_time")
+  )
+  if (is.null(start_column) || is.null(end_column)) {
+    stop(
+      "Trip data must contain recognizable start and end time columns.",
+      call. = FALSE
+    )
+  }
+
+  started_text <- as.character(data[[start_column]])
+  ended_text <- as.character(data[[end_column]])
+  started_at <- .parse_trip_datetime(started_text, tz = timezone)
+  ended_at <- .parse_trip_datetime(ended_text, tz = timezone)
+
+  duration_seconds <- .numeric_trip_value(
+    data,
+    c("tripduration", "trip_duration", "duration_sec", "duration")
+  )
+  calculated_duration <- as.numeric(
+    difftime(ended_at, started_at, units = "secs")
+  )
+  duration_seconds[is.na(duration_seconds)] <- calculated_duration[
+    is.na(duration_seconds)
+  ]
+
+  rider_raw <- tolower(trimws(.trip_value(
+    data,
+    c("member_casual", "usertype", "user_type", "member_type", "membership")
+  )))
+  rider_type <- dplyr::case_when(
+    rider_raw %in% c("member", "subscriber", "registered") ~ "member",
+    rider_raw %in% c(
+      "casual", "customer", "single ride", "day pass",
+      "dependent", "casual rider"
+    ) ~ "casual",
+    TRUE ~ rider_raw
+  )
+  rider_type[is.na(rider_type) | !nzchar(rider_type)] <- NA_character_
+
+  tibble::tibble(
+    system = system,
+    system_name = metadata$name,
+    city = metadata$city,
+    ride_id = .trip_value(data, c("ride_id", "trip_id", "tripid")),
+    bike_type = .trip_value(
+      data,
+      c("rideable_type", "bike_type", "biketype")
+    ),
+    started_at = started_at,
+    ended_at = ended_at,
+    duration_seconds = duration_seconds,
+    duration_minutes = duration_seconds / 60,
+    start_station_id = .trip_value(
+      data,
+      c("start_station_id", "start_station_number", "from_station_id")
+    ),
+    start_station_name = .trip_value(
+      data,
+      c("start_station_name", "start_station", "from_station_name")
+    ),
+    end_station_id = .trip_value(
+      data,
+      c("end_station_id", "end_station_number", "to_station_id")
+    ),
+    end_station_name = .trip_value(
+      data,
+      c("end_station_name", "end_station", "to_station_name")
+    ),
+    start_lat = .numeric_trip_value(
+      data,
+      c("start_lat", "start_station_latitude", "start_latitude")
+    ),
+    start_lng = .numeric_trip_value(
+      data,
+      c(
+        "start_lng", "start_lon", "start_station_longitude",
+        "start_longitude"
+      )
+    ),
+    end_lat = .numeric_trip_value(
+      data,
+      c("end_lat", "end_station_latitude", "end_latitude")
+    ),
+    end_lng = .numeric_trip_value(
+      data,
+      c("end_lng", "end_lon", "end_station_longitude", "end_longitude")
+    ),
+    rider_type = rider_type
+  )
+}
+
+#' Load and standardize historical trip files
+#'
+#' Reads one CSV, a vector of CSVs, or all CSVs in a directory and combines
+#' them into the common trip schema returned by [standardize_trips()].
+#'
+#' @param path A CSV path, vector of CSV paths, or directory.
+#' @param system One of `"capital"`, `"citibike"`, `"divvy"`, or
+#'   `"baywheels"`.
+#' @param start_date Optional first trip date to retain.
+#' @param end_date Optional last trip date to retain.
+#' @param n_max Maximum rows to read from each file.
+#'
+#' @return A standardized trip-level tibble.
+#' @export
+load_trip_data <- function(
+  path,
+  system,
+  start_date = NULL,
+  end_date = NULL,
+  n_max = Inf
+) {
+  if (length(path) == 1L && dir.exists(path)) {
+    all_csv <- sort(list.files(
+      path,
+      pattern = "[.]csv$",
+      full.names = TRUE,
+      recursive = TRUE
+    ))
+    trip_csv <- all_csv[
+      grepl("(tripdata|trips)", basename(all_csv), ignore.case = TRUE)
+    ]
+    path <- if (length(trip_csv)) trip_csv else all_csv
+  }
+  if (length(path) == 0L || any(!file.exists(path))) {
+    stop("One or more trip CSV paths do not exist.", call. = FALSE)
+  }
+
+  trips <- purrr::map_dfr(path, function(file) {
+    message("Reading ", basename(file))
+    raw <- readr::read_csv(
+      file,
+      col_types = readr::cols(.default = readr::col_character()),
+      progress = FALSE,
+      n_max = n_max
+    )
+    standardize_trips(raw, system)
+  })
+
+  if (!is.null(start_date)) {
+    start_date <- .as_date(start_date, "start_date")
+    trips <- dplyr::filter(trips, as.Date(started_at) >= start_date)
+  }
+  if (!is.null(end_date)) {
+    end_date <- .as_date(end_date, "end_date")
+    trips <- dplyr::filter(trips, as.Date(started_at) <= end_date)
+  }
+
+  trips
+}
+
+#' Standardized trip-data dictionary
+#'
+#' @return A tibble describing every field returned by
+#'   [standardize_trips()] and [load_trip_data()].
+#' @export
+trip_data_dictionary <- function() {
+  tibble::tribble(
+    ~variable, ~type, ~description,
+    "system", "character", "Short system identifier",
+    "system_name", "character", "Public bike-share system name",
+    "city", "character", "Primary metropolitan area",
+    "ride_id", "character", "Source ride or trip identifier",
+    "bike_type", "character", "Published bike or rideable type",
+    "started_at", "POSIXct", "Trip start date and local time",
+    "ended_at", "POSIXct", "Trip end date and local time",
+    "duration_seconds", "double", "Published or calculated duration in seconds",
+    "duration_minutes", "double", "Trip duration in minutes",
+    "start_station_id", "character", "Origin station identifier",
+    "start_station_name", "character", "Origin station name",
+    "end_station_id", "character", "Destination station identifier",
+    "end_station_name", "character", "Destination station name",
+    "start_lat", "double", "Origin latitude",
+    "start_lng", "double", "Origin longitude",
+    "end_lat", "double", "Destination latitude",
+    "end_lng", "double", "Destination longitude",
+    "rider_type", "character", "Standardized member or casual category"
+  )
+}

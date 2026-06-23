@@ -1,7 +1,14 @@
 # bikerentaldata
 
-`bikerentaldata` is an R package for downloading and preparing the daily
-Capital Bikeshare dataset used in:
+`bikerentaldata` is an R package for downloading and standardizing historical
+trip data from:
+
+- Capital Bikeshare — Washington, D.C.
+- Citi Bike — New York City
+- Divvy — Chicago
+- Bay Wheels — San Francisco Bay Area
+
+It also prepares the daily Capital Bikeshare dataset used in:
 
 > Odoom, C., Boateng, A., Fobi Mensah, S., & Maposa, D. (2024). Modeling of
 > the daily dynamics in bike rental system using weather and calendar
@@ -18,8 +25,11 @@ library(bikerentaldata)
 # Open the package overview in R
 ?bikerentaldata
 
-# Official archive coverage: annual files through 2017, monthly thereafter
-archives <- available_trip_data()
+# Supported systems
+available_systems()
+
+# Official archive coverage for one system
+archives <- available_trip_data("citibike")
 range(archives$start_date)
 range(archives$end_date)
 
@@ -31,9 +41,32 @@ summarize_trip_locations("data/raw")
 summarize_trip_locations("data/raw", by = "file")
 ```
 
-The official archive begins on September 20, 2010. Annual or quarterly legacy
-files are used through 2017; monthly archives are used from January 2018
-onward.
+## Multi-system trip workflow
+
+```r
+paths <- download_trip_files(
+  system = "divvy",
+  start_date = "2024-01-01",
+  end_date = "2024-03-31",
+  destination = "data/divvy"
+)
+
+trips <- load_trip_data(
+  paths,
+  system = "divvy"
+)
+
+dplyr::count(trips, bike_type, rider_type)
+```
+
+The standardized result includes system, city, ride ID, bike type, start/end
+times, duration, station identifiers and names, coordinates, and member/casual
+rider type. Fields unavailable in legacy source files are returned as `NA`.
+Use `trip_data_dictionary()` for full field definitions.
+
+Note that Citi Bike's official 2013–2023 archives are annual and can be large;
+its 2024+ archives are monthly. Check `available_trip_data("citibike")` before
+downloading.
 
 ## Install
 
@@ -83,20 +116,18 @@ archive and may therefore produce slightly different weather summaries. To
 reproduce a specific historical build, pass its cached weather CSV directly
 to `prepare_bike_rentals()`.
 
-The lower-level functions `download_trip_files()`, `download_weather_data()`,
-`prepare_bike_rentals()`, `load_bike_rentals()`,
-`validate_bike_rentals()`, `available_trip_data()`,
+The lower-level functions `available_systems()`, `available_trip_data()`,
+`download_trip_files()`, `load_trip_data()`, `standardize_trips()`,
+`download_weather_data()`, `prepare_bike_rentals()`,
+`load_bike_rentals()`, `validate_bike_rentals()`,
 `current_system_info()`, `summarize_trip_locations()`, and
 `data_dictionary()` can be used independently.
 
-Legacy files from 2010–2017 do not include station coordinates. The package
-preserves their rental counts and station identifiers, but returns `NA` for
-daily latitude and longitude. Coordinate-dependent analyses should use newer
-files or add an external station-coordinate reference.
+Legacy schemas vary by system. The package preserves available fields and
+returns `NA` where bike type, coordinates, or ride IDs were not published.
 
 ## Data terms
 
-Capital Bikeshare data remain governed by the
-[Capital Bikeshare Data License Agreement](https://capitalbikeshare.com/data-license-agreement).
-The package does not grant rights in Capital Bikeshare or weather data.
+Each operator's data remain governed by its own license or data-use policy.
+The package does not grant rights in any operator's trip data or weather data.
 Review [DATA_LICENSE.md](DATA_LICENSE.md) before use.

@@ -1,56 +1,23 @@
-#' List available Capital Bikeshare trip archives
+#' List available historical trip archives
 #'
-#' Queries the official Capital Bikeshare S3 archive and returns the currently
-#' available annual and monthly trip files.
+#' Queries the selected system's official archive and returns available annual,
+#' quarterly, or monthly trip files.
 #'
+#' @param system One of `"capital"`, `"citibike"`, `"divvy"`, or
+#'   `"baywheels"`. Defaults to `"capital"` for backward compatibility.
 #' @return A tibble containing archive name, format, period, and download URL.
 #'
 #' @examples
 #' \dontrun{
-#' archives <- available_trip_data()
+#' archives <- available_trip_data("citibike")
 #' head(archives)
 #' range(archives$start_date)
 #' range(archives$end_date)
 #' }
 #' @export
-available_trip_data <- function() {
-  endpoint <- "https://capitalbikeshare-data.s3.amazonaws.com/?list-type=2"
-  xml <- paste(readLines(endpoint, warn = FALSE), collapse = "")
-  matches <- regmatches(
-    xml,
-    gregexpr("<Key>[^<]+-capitalbikeshare-tripdata[.]zip</Key>", xml)
-  )[[1]]
-
-  if (length(matches) == 0L || identical(matches, "")) {
-    stop("No Capital Bikeshare archives were found.", call. = FALSE)
-  }
-
-  keys <- gsub("</?Key>", "", matches)
-  ids <- sub("-capitalbikeshare-tripdata[.]zip$", "", keys)
-  annual <- grepl("^[0-9]{4}$", ids)
-  start_date <- as.Date(ifelse(
-    annual,
-    paste0(ids, "-01-01"),
-    paste0(substr(ids, 1, 4), "-", substr(ids, 5, 6), "-01")
-  ))
-  start_date[ids == "2010"] <- as.Date("2010-09-20")
-  end_date <- start_date
-  end_date[annual] <- as.Date(paste0(ids[annual], "-12-31"))
-  end_date[!annual] <- (
-    lubridate::ceiling_date(start_date[!annual], "month") - 1
-  )
-
-  tibble::tibble(
-    archive = keys,
-    format = ifelse(annual, "annual", "monthly"),
-    start_date = start_date,
-    end_date = end_date,
-    url = paste0(
-      "https://capitalbikeshare-data.s3.amazonaws.com/",
-      keys
-    )
-  ) |>
-    dplyr::arrange(start_date)
+available_trip_data <- function(system = "capital") {
+  system <- .match_system(system)
+  .parse_archive_period(system, .list_archive_keys(system))
 }
 
 #' Get current Capital Bikeshare system information
@@ -124,6 +91,7 @@ print.bikerental_system_info <- function(x, ...) {
 #'
 #' @param trip_directory Directory containing downloaded trip CSV files.
 #' @param by Return an overall summary or one row per source file.
+#' @param system System identifier used to label the result.
 #'
 #' @return A tibble containing file and station-location counts.
 #'
@@ -135,12 +103,14 @@ print.bikerental_system_info <- function(x, ...) {
 #' @export
 summarize_trip_locations <- function(
   trip_directory = file.path("data", "raw"),
-  by = c("overall", "file")
+  by = c("overall", "file"),
+  system = "capital"
 ) {
   by <- match.arg(by)
+  system <- .match_system(system)
   paths <- sort(list.files(
     trip_directory,
-    pattern = "capitalbikeshare-tripdata[.]csv$",
+    pattern = "[.]csv$",
     full.names = TRUE,
     recursive = TRUE
   ))
@@ -176,12 +146,14 @@ summarize_trip_locations <- function(
 
   if (by == "file") {
     return(tibble::tibble(
+      system = system,
       file = basename(paths),
       station_locations = vapply(station_sets, length, integer(1))
     ))
   }
 
   tibble::tibble(
+    system = system,
     files = length(paths),
     first_file = basename(paths[[1]]),
     last_file = basename(paths[[length(paths)]]),

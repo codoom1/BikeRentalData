@@ -150,14 +150,15 @@
   names(data)[indexes[[1]]]
 }
 
-.parse_trip_datetime <- function(x) {
+.parse_trip_datetime <- function(x, tz = "America/New_York") {
   lubridate::parse_date_time(
     x,
     orders = c(
       "ymd HMS", "ymd HM", "mdy HMS", "mdy HM",
       "ymd IMS p", "ymd IM p", "mdy IMS p", "mdy IM p"
     ),
-    quiet = TRUE
+    quiet = TRUE,
+    tz = tz
   )
 }
 

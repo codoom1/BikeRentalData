@@ -8,6 +8,15 @@ Capital Bikeshare trip data are provided under the
 That agreement prohibits publishing, sublicensing, selling, or distributing
 the data as a stand-alone dataset, subject to its complete terms.
 
+Other supported systems publish data under their own terms:
+
+- [Citi Bike Data Use Policy](https://citibikenyc.com/data-use-policy)
+- [Divvy Data License Agreement](https://divvybikes.com/data-license-agreement)
+- [Bay Wheels License Agreement](https://baywheels-assets.s3.amazonaws.com/data-license-agreement.html)
+
+Users must review the applicable source agreement before downloading,
+processing, publishing, or redistributing data.
+
 Historical ASOS observations are retrieved through the
 [Iowa Environmental Mesonet archive](https://mesonet.agron.iastate.edu/request/download.phtml).
 Users should acknowledge the IEM and the underlying weather observations as

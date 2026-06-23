@@ -6,8 +6,9 @@
 \alias{bikerentaldata}
 \title{bikerentaldata: Capital Bikeshare data tools}
 \description{
-\code{bikerentaldata} downloads, prepares, validates, and describes Capital
-Bikeshare trip data without bundling the full third-party dataset.
+\code{bikerentaldata} downloads and standardizes historical trip data from
+Capital Bikeshare, Citi Bike, Divvy, and Bay Wheels without bundling the
+full third-party datasets.
 }
 \section{Main workflow}{
 
@@ -15,6 +16,8 @@ Use \code{\link[=build_bike_rental_data]{build_bike_rental_data()}} to download 
 observations, prepare daily records, validate them, and save a processed
 CSV. For more control, use \code{\link[=download_trip_files]{download_trip_files()}},
 \code{\link[=download_weather_data]{download_weather_data()}}, and \code{\link[=prepare_bike_rentals]{prepare_bike_rentals()}} separately.
+Use \code{\link[=load_trip_data]{load_trip_data()}} and \code{\link[=standardize_trips]{standardize_trips()}} for multi-system,
+trip-level research, and \code{\link[=trip_data_dictionary]{trip_data_dictionary()}} for field definitions.
 }
 
 \section{Data discovery}{
@@ -34,15 +37,15 @@ inspect variable definitions.
 
 \section{Legacy support}{
 
-The package supports annual or quarterly files from September 20, 2010
-through 2017 and monthly files from January 2018 onward. Legacy files do not
-include coordinates, so prepared latitude and longitude values are \code{NA}.
+Archive structures vary by system and year. The standardizer supports the
+recent common Lyft schema and common legacy column names. Some legacy files
+do not include bike type or coordinates, so unavailable fields are \code{NA}.
 }
 
 \section{Data licensing}{
 
 The package's MIT license applies only to original software. Capital
-Bikeshare and weather records remain subject to their source terms.
+Bikeshare-system and weather records remain subject to their source terms.
 }
 
 \examples{

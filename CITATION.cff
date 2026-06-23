@@ -1,13 +1,13 @@
 cff-version: 1.2.0
 message: "If you use this package, please cite the associated published article."
-title: "bikerentaldata: Build Daily Capital Bikeshare Analysis Data"
+title: "bikerentaldata: Historical U.S. Bike-Share Trip Data Tools"
 type: software
 authors:
   - family-names: Odoom
     given-names: Christopher
 repository-code: "https://github.com/codoom1/BikeRentalData"
 license: MIT
-version: 0.2.1
+version: 0.3.0
 preferred-citation:
   type: article
   title: "Modeling of the daily dynamics in bike rental system using weather and calendar conditions: A semi-parametric approach"

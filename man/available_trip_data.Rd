@@ -2,20 +2,24 @@
 % Please edit documentation in R/information.R
 \name{available_trip_data}
 \alias{available_trip_data}
-\title{List available Capital Bikeshare trip archives}
+\title{List available historical trip archives}
 \usage{
-available_trip_data()
+available_trip_data(system = "capital")
+}
+\arguments{
+\item{system}{One of \code{"capital"}, \code{"citibike"}, \code{"divvy"}, or
+\code{"baywheels"}. Defaults to \code{"capital"} for backward compatibility.}
 }
 \value{
 A tibble containing archive name, format, period, and download URL.
 }
 \description{
-Queries the official Capital Bikeshare S3 archive and returns the currently
-available annual and monthly trip files.
+Queries the selected system's official archive and returns available annual,
+quarterly, or monthly trip files.
 }
 \examples{
 \dontrun{
-archives <- available_trip_data()
+archives <- available_trip_data("citibike")
 head(archives)
 range(archives$start_date)
 range(archives$end_date)

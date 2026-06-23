@@ -1,3 +1,12 @@
+# bikerentaldata 0.3.0
+
+- Added historical trip support for Citi Bike, Divvy, and Bay Wheels.
+- Added `available_systems()`, `load_trip_data()`, and `standardize_trips()`.
+- Extended `available_trip_data()` and `download_trip_files()` with a
+  `system` argument.
+- Added a common multi-city trip schema for bike type, duration, stations,
+  coordinates, and member/casual rider type.
+
 # bikerentaldata 0.2.1
 
 - Added package-level help available through `?bikerentaldata`.

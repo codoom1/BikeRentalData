@@ -2,14 +2,15 @@
 % Please edit documentation in R/download.R
 \name{download_trip_files}
 \alias{download_trip_files}
-\title{Download Capital Bikeshare trip files}
+\title{Download historical bike-share trip files}
 \usage{
 download_trip_files(
   start_date,
   end_date,
   destination = file.path("data", "raw"),
   overwrite = FALSE,
-  keep_zip = FALSE
+  keep_zip = FALSE,
+  system = "capital"
 )
 }
 \arguments{
@@ -22,12 +23,14 @@ download_trip_files(
 \item{overwrite}{Whether to replace existing files.}
 
 \item{keep_zip}{Whether to retain downloaded ZIP archives.}
+
+\item{system}{One of \code{"capital"}, \code{"citibike"}, \code{"divvy"}, or
+\code{"baywheels"}.}
 }
 \value{
 A character vector containing extracted CSV paths.
 }
 \description{
-Downloads official annual archives for 2010--2017 and monthly archives for
-2018 onward. All CSV files contained in each archive are extracted.
-Existing extracted files are reused unless \code{overwrite = TRUE}.
+Downloads official archives for a supported system and extracts all trip
+CSV files whose archive periods overlap the requested date range.
 }

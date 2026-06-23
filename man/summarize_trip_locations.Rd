@@ -6,13 +6,16 @@
 \usage{
 summarize_trip_locations(
   trip_directory = file.path("data", "raw"),
-  by = c("overall", "file")
+  by = c("overall", "file"),
+  system = "capital"
 )
 }
 \arguments{
 \item{trip_directory}{Directory containing downloaded trip CSV files.}
 
 \item{by}{Return an overall summary or one row per source file.}
+
+\item{system}{System identifier used to label the result.}
 }
 \value{
 A tibble containing file and station-location counts.

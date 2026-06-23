@@ -1,14 +1,15 @@
-#' Download Capital Bikeshare trip files
+#' Download historical bike-share trip files
 #'
-#' Downloads official annual archives for 2010--2017 and monthly archives for
-#' 2018 onward. All CSV files contained in each archive are extracted.
-#' Existing extracted files are reused unless `overwrite = TRUE`.
+#' Downloads official archives for a supported system and extracts all trip
+#' CSV files whose archive periods overlap the requested date range.
 #'
 #' @param start_date First date required.
 #' @param end_date Last date required.
 #' @param destination Directory for extracted trip CSV files.
 #' @param overwrite Whether to replace existing files.
 #' @param keep_zip Whether to retain downloaded ZIP archives.
+#' @param system One of `"capital"`, `"citibike"`, `"divvy"`, or
+#'   `"baywheels"`.
 #'
 #' @return A character vector containing extracted CSV paths.
 #' @export
@@ -17,9 +18,22 @@ download_trip_files <- function(
   end_date,
   destination = file.path("data", "raw"),
   overwrite = FALSE,
-  keep_zip = FALSE
+  keep_zip = FALSE,
+  system = "capital"
 ) {
-  plan <- .archive_plan(start_date, end_date)
+  system <- .match_system(system)
+  start_date <- .as_date(start_date, "start_date")
+  end_date <- .as_date(end_date, "end_date")
+  plan <- available_trip_data(system)
+  plan <- plan[
+    plan$end_date >= start_date & plan$start_date <= end_date,
+    ,
+    drop = FALSE
+  ]
+  if (nrow(plan) == 0L) {
+    stop("No ", system, " archives overlap the requested dates.", call. = FALSE)
+  }
+
   dir.create(destination, recursive = TRUE, showWarnings = FALSE)
   archive_dir <- file.path(destination, "archives")
   dir.create(archive_dir, recursive = TRUE, showWarnings = FALSE)
@@ -27,25 +41,21 @@ download_trip_files <- function(
   output_paths <- character()
 
   for (index in seq_len(nrow(plan))) {
-    archive_id <- plan$archive_id[[index]]
-    archive_name <- plan$archive_name[[index]]
+    archive_name <- plan$archive[[index]]
     archive_url <- plan$url[[index]]
+    archive_id <- tools::file_path_sans_ext(
+      tools::file_path_sans_ext(archive_name)
+    )
     manifest_path <- file.path(
       archive_dir,
-      paste0(archive_id, "-extracted-files.txt")
+      paste0(system, "-", gsub("[^A-Za-z0-9._-]", "_", archive_id),
+             "-extracted-files.txt")
     )
 
-    existing <- if (plan$format[[index]] == "annual") {
-      if (file.exists(manifest_path)) {
-        file.path(destination, readLines(manifest_path, warn = FALSE))
-      } else {
-        character()
-      }
+    existing <- if (file.exists(manifest_path)) {
+      file.path(destination, readLines(manifest_path, warn = FALSE))
     } else {
-      file.path(
-        destination,
-        paste0(archive_id, "-capitalbikeshare-tripdata.csv")
-      )
+      character()
     }
 
     if (length(existing) > 0L && all(file.exists(existing)) && !overwrite) {
@@ -66,8 +76,14 @@ download_trip_files <- function(
 
     archive_contents <- utils::unzip(archive_path, list = TRUE)
     csv_names <- archive_contents$Name[
-      grepl("\\.csv$", archive_contents$Name, ignore.case = TRUE)
+      grepl("\\.csv$", archive_contents$Name, ignore.case = TRUE) &
+        !grepl("(^|/)__MACOSX/", archive_contents$Name)
     ]
+    if (system == "divvy") {
+      csv_names <- csv_names[
+        !grepl("Divvy_Stations_", basename(csv_names), ignore.case = TRUE)
+      ]
+    }
 
     if (length(csv_names) == 0L) {
       stop("No CSV file found in ", archive_name, ".", call. = FALSE)
@@ -77,13 +93,22 @@ download_trip_files <- function(
       unlink(existing)
     }
 
-    utils::unzip(archive_path, files = csv_names, exdir = destination)
-    extracted_paths <- file.path(destination, csv_names)
-    if (!all(file.exists(extracted_paths))) {
+    temp_dir <- tempfile("bikerentaldata-unzip-")
+    dir.create(temp_dir)
+    utils::unzip(archive_path, files = csv_names, exdir = temp_dir)
+    output_names <- basename(csv_names)
+    extracted_paths <- file.path(destination, output_names)
+    copied <- file.copy(
+      file.path(temp_dir, csv_names),
+      extracted_paths,
+      overwrite = TRUE
+    )
+    unlink(temp_dir, recursive = TRUE, force = TRUE)
+    if (!all(copied) || !all(file.exists(extracted_paths))) {
       stop("Could not extract all CSV files from ", archive_name, ".", call. = FALSE)
     }
     output_paths <- c(output_paths, extracted_paths)
-    writeLines(csv_names, manifest_path)
+    writeLines(output_names, manifest_path)
 
     if (!keep_zip) {
       unlink(archive_path)
