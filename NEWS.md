@@ -1,3 +1,10 @@
+# bikerentaldata 0.4.7
+
+- Added density variables for bicycle infrastructure exposure, reported as
+  meters of infrastructure per square kilometer within each station buffer.
+- Expanded documentation explaining protected bike lanes and why density is
+  preferred for cross-city comparisons.
+
 # bikerentaldata 0.4.6
 
 - Improved `infrastructure_data_dictionary()` console output with a readable

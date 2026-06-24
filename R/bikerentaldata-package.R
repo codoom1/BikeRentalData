@@ -45,6 +45,15 @@
 #' interpreted as nearby infrastructure availability, not proof that a rider
 #' used a specific bike lane or trail.
 #'
+#' Density variables ending in `_m_per_km2` express infrastructure length per
+#' square kilometer inside the station buffer and are recommended for
+#' cross-city comparisons. Raw total length is useful, but dense large-city
+#' networks can naturally produce higher totals.
+#'
+#' Protected bike lanes are facilities separated from motor traffic by posts,
+#' curbs, planters, parked cars, raised/off-street design, or similar
+#' separation. Exact labels vary by city source layer.
+#'
 #' For large systems such as Citi Bike, use the station-level cache workflow:
 #' build a reusable station exposure table with
 #' [build_station_infrastructure_exposure()], join it to trips with

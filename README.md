@@ -294,14 +294,30 @@ station_exposure <- build_station_infrastructure_exposure(
 This creates variables such as:
 
 - `start_bikeinfra_250m_m` and `end_bikeinfra_250m_m`;
+- `start_bikeinfra_500m_m_per_km2` and
+  `end_bikeinfra_500m_m_per_km2`;
 - `start_protected_bikeinfra_500m_m`;
+- `start_protected_bikeinfra_500m_m_per_km2`;
 - `start_trail_500m_m`;
+- `start_trail_500m_m_per_km2`;
 - `start_any_protected_500m`; and
 - `start_nearest_bikeinfra_m`.
 
 These are station-area exposure variables. They should be interpreted as bike
 infrastructure availability near the start or end station, not proof that a
 rider used a specific bike lane or trail.
+
+For cross-city comparisons, prefer density variables such as
+`start_bikeinfra_500m_m_per_km2` over raw total length alone. Total length is
+still useful, but dense large-city street networks can naturally produce higher
+raw totals. Density expresses nearby infrastructure as meters per square
+kilometer inside the station buffer.
+
+A protected bike lane is a facility separated from motor traffic by posts,
+curbs, planters, parked cars, raised/off-street design, or similar separation.
+Exact labels vary by city source layer, so check
+`available_bike_infrastructure_sources()` and
+`infrastructure_data_dictionary()` before modeling.
 
 Capital Bikeshare and Bay Wheels are regional systems. The Capital default now
 combines official layers for Washington, DC, Arlington, Alexandria, and

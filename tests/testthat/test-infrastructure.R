@@ -21,7 +21,9 @@ test_that("infrastructure data dictionary describes generated variables", {
   )
 
   expect_true("start_bikeinfra_250m_m" %in% dictionary$variable)
+  expect_true("start_bikeinfra_250m_m_per_km2" %in% dictionary$variable)
   expect_true("end_protected_bikeinfra_500m_m" %in% dictionary$variable)
+  expect_true("end_protected_bikeinfra_500m_m_per_km2" %in% dictionary$variable)
   expect_true("start_nearest_bikeinfra_m" %in% dictionary$variable)
   expect_true(all(c(
     "variable", "type", "units", "level", "source",
@@ -75,8 +77,15 @@ test_that("bike infrastructure exposure adds station-area metrics", {
   )
 
   expect_true("start_bikeinfra_250m_m" %in% names(enriched))
+  expect_true("start_bikeinfra_250m_m_per_km2" %in% names(enriched))
   expect_true("end_trail_500m_m" %in% names(enriched))
+  expect_true("end_trail_500m_m_per_km2" %in% names(enriched))
   expect_true(enriched$start_bikeinfra_250m_m > 0)
+  expect_equal(
+    enriched$start_bikeinfra_250m_m_per_km2,
+    enriched$start_bikeinfra_250m_m / (pi * 0.25^2),
+    tolerance = 1e-6
+  )
   expect_true(enriched$start_any_protected_500m)
   expect_true(enriched$end_nearest_bikeinfra_m >= 0)
 })

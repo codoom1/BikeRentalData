@@ -154,6 +154,13 @@ available_bike_infrastructure_sources <- function() {
 #' not identify the route a rider used and should not be interpreted as
 #' evidence that a rider traveled on a specific bike lane or trail.
 #'
+#' A protected bike lane is a bicycle facility separated from motor-vehicle
+#' traffic by physical separation or meaningful vertical/horizontal separation,
+#' such as posts, curbs, planters, parking protection, raised lanes, or
+#' off-street/sidepath designs. Exact labels vary across city source layers, so
+#' the package maps each official layer's facility classes to protected/trail
+#' categories where possible.
+#'
 #' @examples
 #' infrastructure_data_dictionary()
 #' infrastructure_data_dictionary(format = "tibble")
@@ -212,6 +219,20 @@ infrastructure_data_dictionary <- function(
           "Higher values indicate more nearby bicycle infrastructure around the",
           paste0(side_label[[side]], "; this is not the distance ridden by a user.")
         ),
+        paste0(side, "_bikeinfra_", suffix, "_m_per_km2"),
+        "double",
+        "meters per square kilometer",
+        "station",
+        "derived from total bike infrastructure length and circular buffer area",
+        paste(
+          "Density of all bicycle infrastructure within", buffer_m,
+          "meters of the", paste0(side_label[[side]], ".")
+        ),
+        paste(
+          "Best for comparing stations or cities because it expresses nearby",
+          "infrastructure per unit area. With the same buffer size, it ranks",
+          "stations like total length but has clearer units."
+        ),
         paste0(side, "_protected_bikeinfra_", suffix, "_m"),
         "double",
         "meters",
@@ -225,6 +246,19 @@ infrastructure_data_dictionary <- function(
         paste(
           "Higher values indicate more nearby protected/separated bicycle",
           "infrastructure. Classification depends on the official source layer."
+        ),
+        paste0(side, "_protected_bikeinfra_", suffix, "_m_per_km2"),
+        "double",
+        "meters per square kilometer",
+        "station",
+        "derived from protected infrastructure length and circular buffer area",
+        paste(
+          "Density of protected or separated bicycle infrastructure within",
+          buffer_m, "meters of the", paste0(side_label[[side]], ".")
+        ),
+        paste(
+          "Useful for cross-city comparison of protected/separated facility",
+          "availability near stations. Source-layer definitions vary by city."
         ),
         paste0(side, "_any_protected_", suffix),
         "logical",
@@ -252,6 +286,19 @@ infrastructure_data_dictionary <- function(
         paste(
           "Higher values indicate more nearby trail/shared-use path exposure.",
           "Availability depends on trail classes present in the source layer."
+        ),
+        paste0(side, "_trail_", suffix, "_m_per_km2"),
+        "double",
+        "meters per square kilometer",
+        "station",
+        "derived from trail/shared-use path length and circular buffer area",
+        paste(
+          "Density of trails, greenways, sidepaths, or shared-use paths within",
+          buffer_m, "meters of the", paste0(side_label[[side]], ".")
+        ),
+        paste(
+          "Useful for comparing nearby off-street or shared-use path exposure",
+          "across stations and systems."
         )
       )
     })
@@ -272,6 +319,12 @@ infrastructure_data_dictionary <- function(
 print.bikerental_infrastructure_dictionary <- function(x, ...) {
   cat("Bicycle infrastructure exposure dictionary\n")
   cat("Variables describe station-area exposure, not actual route use.\n\n")
+  cat(
+    "Protected lane: a bike facility separated from motor traffic by posts,\n",
+    "curbs, planters, parked cars, raised/off-street design, or similar\n",
+    "separation. Exact source labels vary by city.\n\n",
+    sep = ""
+  )
 
   for (index in seq_len(nrow(x))) {
     row <- x[index, ]
@@ -730,9 +783,10 @@ download_bike_infrastructure <- function(
 
   for (buffer_m in buffers_m) {
     buffer_name <- paste0(buffer_m, "m")
+    buffer_area_km2 <- pi * (buffer_m / 1000)^2
     buffers <- sf::st_buffer(points, dist = buffer_m)
 
-    result[[paste0(side, "_bikeinfra_", buffer_name, "_m")]] <- vapply(
+    bikeinfra_length <- vapply(
       seq_len(nrow(points)),
       function(index) {
         .line_length_in_buffer(
@@ -743,6 +797,10 @@ download_bike_infrastructure <- function(
       },
       numeric(1)
     )
+    result[[paste0(side, "_bikeinfra_", buffer_name, "_m")]] <-
+      bikeinfra_length
+    result[[paste0(side, "_bikeinfra_", buffer_name, "_m_per_km2")]] <-
+      bikeinfra_length / buffer_area_km2
 
     if (nrow(protected_infrastructure) > 0L) {
       protected_length <- vapply(
@@ -758,12 +816,18 @@ download_bike_infrastructure <- function(
       )
       result[[paste0(side, "_protected_bikeinfra_", buffer_name, "_m")]] <-
         protected_length
+      result[[paste0(
+        side,
+        "_protected_bikeinfra_",
+        buffer_name,
+        "_m_per_km2"
+      )]] <- protected_length / buffer_area_km2
       result[[paste0(side, "_any_protected_", buffer_name)]] <-
         protected_length > 0
     }
 
     if (nrow(trail_infrastructure) > 0L) {
-      result[[paste0(side, "_trail_", buffer_name, "_m")]] <- vapply(
+      trail_length <- vapply(
         seq_len(nrow(points)),
         function(index) {
           .line_length_in_buffer(
@@ -774,6 +838,9 @@ download_bike_infrastructure <- function(
         },
         numeric(1)
       )
+      result[[paste0(side, "_trail_", buffer_name, "_m")]] <- trail_length
+      result[[paste0(side, "_trail_", buffer_name, "_m_per_km2")]] <-
+        trail_length / buffer_area_km2
     }
   }
 

@@ -31,6 +31,13 @@ Describes the station-area bicycle infrastructure variables created by
 These variables measure infrastructure availability near stations. They do
 not identify the route a rider used and should not be interpreted as
 evidence that a rider traveled on a specific bike lane or trail.
+
+A protected bike lane is a bicycle facility separated from motor-vehicle
+traffic by physical separation or meaningful vertical/horizontal separation,
+such as posts, curbs, planters, parking protection, raised lanes, or
+off-street/sidepath designs. Exact labels vary across city source layers, so
+the package maps each official layer's facility classes to protected/trail
+categories where possible.
 }
 \examples{
 infrastructure_data_dictionary()
