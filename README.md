@@ -234,6 +234,60 @@ Check the exact source and coverage before analysis:
 
 ```r
 available_bike_infrastructure_sources()
+infrastructure_data_dictionary()
+```
+
+### Faster Citi Bike / large-city workflow
+
+Citi Bike is slower because the NYC infrastructure layer has many features.
+The first exposure build must do real spatial geometry work. After that, reuse
+the station-level cache:
+
+```r
+bike_lanes <- download_bike_infrastructure(
+  "citibike",
+  destination = "data/spatial"
+)
+
+station_exposure <- build_station_infrastructure_exposure(
+  trips,
+  infrastructure = bike_lanes,
+  buffers_m = c(250, 500),
+  cache_file = "data/cache/citibike_station_exposure_250_500.csv"
+)
+
+trips <- add_station_infrastructure_exposure(
+  trips,
+  station_exposure
+)
+```
+
+For later monthly files, skip the spatial recalculation and reuse the same
+cache:
+
+```r
+station_exposure <- readr::read_csv(
+  "data/cache/citibike_station_exposure_250_500.csv",
+  show_col_types = FALSE
+)
+
+trips <- add_station_infrastructure_exposure(
+  trips,
+  station_exposure
+)
+```
+
+If you only need origin exposure, use `sides = "start"` to cut the spatial
+work roughly in half:
+
+```r
+station_exposure <- build_station_infrastructure_exposure(
+  trips,
+  infrastructure = bike_lanes,
+  buffers_m = c(250, 500),
+  sides = "start",
+  cache_file = "data/cache/citibike_start_exposure_250_500.csv"
+)
 ```
 
 This creates variables such as:

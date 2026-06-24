@@ -1,3 +1,10 @@
+# bikerentaldata 0.4.4
+
+- Added `infrastructure_data_dictionary()` with detailed definitions and
+  interpretation guidance for station-area infrastructure exposure variables.
+- Expanded README guidance for fast Citi Bike workflows using reusable
+  station-level exposure caches.
+
 # bikerentaldata 0.4.3
 
 - Added `build_station_infrastructure_exposure()` to compute and optionally

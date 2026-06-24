@@ -13,6 +13,25 @@ test_that("bike infrastructure source table covers supported systems", {
   expect_true(all(grepl("^https://", sources$url)))
 })
 
+test_that("infrastructure data dictionary describes generated variables", {
+  dictionary <- infrastructure_data_dictionary(
+    buffers_m = c(250, 500),
+    sides = c("start", "end")
+  )
+
+  expect_true("start_bikeinfra_250m_m" %in% dictionary$variable)
+  expect_true("end_protected_bikeinfra_500m_m" %in% dictionary$variable)
+  expect_true("start_nearest_bikeinfra_m" %in% dictionary$variable)
+  expect_true(all(c(
+    "variable", "type", "units", "level", "source",
+    "description", "interpretation"
+  ) %in% names(dictionary)))
+  expect_error(
+    infrastructure_data_dictionary(buffers_m = 0),
+    "positive distances"
+  )
+})
+
 test_that("bike infrastructure exposure adds station-area metrics", {
   testthat::skip_if_not_installed("sf")
 

@@ -135,6 +135,126 @@ available_bike_infrastructure_sources <- function() {
   .bike_infrastructure_sources
 }
 
+#' Bicycle infrastructure exposure data dictionary
+#'
+#' Describes the station-area bicycle infrastructure variables created by
+#' [build_station_infrastructure_exposure()],
+#' [add_station_infrastructure_exposure()], and
+#' [add_bike_infrastructure_exposure()].
+#'
+#' @param buffers_m Numeric buffer distances, in meters.
+#' @param sides Station sides to describe: `"start"`, `"end"`, or both.
+#'
+#' @return A tibble with variable names, units, level, and interpretation.
+#'
+#' @details
+#' These variables measure infrastructure availability near stations. They do
+#' not identify the route a rider used and should not be interpreted as
+#' evidence that a rider traveled on a specific bike lane or trail.
+#'
+#' @examples
+#' infrastructure_data_dictionary()
+#' infrastructure_data_dictionary(buffers_m = c(250, 500, 1000))
+#' @export
+infrastructure_data_dictionary <- function(
+  buffers_m = c(250, 500),
+  sides = c("start", "end")
+) {
+  buffers_m <- sort(unique(as.numeric(buffers_m)))
+  if (!length(buffers_m) || anyNA(buffers_m) || any(buffers_m <= 0)) {
+    stop("`buffers_m` must contain positive distances in meters.", call. = FALSE)
+  }
+  sides <- match.arg(sides, c("start", "end"), several.ok = TRUE)
+
+  side_label <- c(
+    start = "trip origin/start station",
+    end = "trip destination/end station"
+  )
+
+  base <- purrr::map_dfr(sides, function(side) {
+    tibble::tibble(
+      variable = paste0(side, "_nearest_bikeinfra_m"),
+      type = "double",
+      units = "meters",
+      level = "station",
+      source = "bike infrastructure layer + station coordinates",
+      description = paste(
+        "Straight-line distance from the", side_label[[side]],
+        "to the nearest bicycle facility in the infrastructure layer."
+      ),
+      interpretation = paste(
+        "Smaller values indicate closer bicycle infrastructure near the",
+        side_label[[side]], "not route use."
+      )
+    )
+  })
+
+  buffer_variables <- purrr::map_dfr(sides, function(side) {
+    purrr::map_dfr(buffers_m, function(buffer_m) {
+      suffix <- paste0(buffer_m, "m")
+      tibble::tribble(
+        ~variable, ~type, ~units, ~level, ~source, ~description, ~interpretation,
+        paste0(side, "_bikeinfra_", suffix, "_m"),
+        "double",
+        "meters",
+        "station",
+        "bike infrastructure layer + station coordinates",
+        paste(
+          "Total clipped length of all bicycle infrastructure within",
+          buffer_m, "meters of the", side_label[[side]], "."
+        ),
+        paste(
+          "Higher values indicate more nearby bicycle infrastructure around the",
+          side_label[[side]], "not the distance ridden by a user."
+        ),
+        paste0(side, "_protected_bikeinfra_", suffix, "_m"),
+        "double",
+        "meters",
+        "station",
+        "bike infrastructure layer facility classification",
+        paste(
+          "Total clipped length of protected or separated bicycle",
+          "infrastructure within", buffer_m, "meters of the",
+          side_label[[side]], "."
+        ),
+        paste(
+          "Higher values indicate more nearby protected/separated bicycle",
+          "infrastructure. Classification depends on the official source layer."
+        ),
+        paste0(side, "_any_protected_", suffix),
+        "logical",
+        "TRUE/FALSE",
+        "station",
+        "derived from protected infrastructure length",
+        paste(
+          "Indicator that protected or separated bicycle infrastructure exists",
+          "within", buffer_m, "meters of the", side_label[[side]], "."
+        ),
+        paste(
+          "TRUE means at least one protected/separated facility is nearby; it",
+          "does not mean the trip used that facility."
+        ),
+        paste0(side, "_trail_", suffix, "_m"),
+        "double",
+        "meters",
+        "station",
+        "bike infrastructure layer facility classification",
+        paste(
+          "Total clipped length of trails, greenways, sidepaths, or",
+          "shared-use paths within", buffer_m, "meters of the",
+          side_label[[side]], "."
+        ),
+        paste(
+          "Higher values indicate more nearby trail/shared-use path exposure.",
+          "Availability depends on trail classes present in the source layer."
+        )
+      )
+    })
+  })
+
+  dplyr::bind_rows(base, buffer_variables)
+}
+
 .safe_filename <- function(x) {
   x <- gsub("[^A-Za-z0-9]+", "-", tolower(x))
   gsub("(^-+|-+$)", "", x)

@@ -1,6 +1,6 @@
 Package: bikerentaldata
 Title: Historical U.S. Bike-Share Trip Data Tools
-Version: 0.4.3
+Version: 0.4.4
 Authors@R: person(
     given = "Christopher",
     family = "Odoom",
