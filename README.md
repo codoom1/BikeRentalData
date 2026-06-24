@@ -177,6 +177,85 @@ weather conditions.
 These are metro-level airport observations—not exact weather along each
 route. Weather is currently daily rather than trip-hour specific.
 
+## Bike infrastructure exposure
+
+If you have a city bike-lane or trail layer as an `sf` line object, add
+station-area exposure measures:
+
+```r
+install.packages("sf") # only needed for spatial infrastructure exposure
+
+bike_lanes <- download_bike_infrastructure("capital")
+
+trips <- add_bike_infrastructure_exposure(
+  trips,
+  infrastructure = bike_lanes,
+  buffers_m = c(250, 500),
+  cache_file = "data/cache/capital_station_exposure.csv"
+)
+```
+
+For large monthly or yearly studies, the recommended workflow is to cache the
+station-level exposure table once, then join it to every trip file:
+
+```r
+station_exposure <- build_station_infrastructure_exposure(
+  trips,
+  infrastructure = bike_lanes,
+  buffers_m = c(250, 500),
+  cache_file = "data/cache/capital_station_exposure.csv"
+)
+
+trips <- add_station_infrastructure_exposure(
+  trips,
+  station_exposure
+)
+
+summarize_station_infrastructure_coverage(
+  trips,
+  station_exposure
+)
+```
+
+This avoids recalculating the same station geometry for every month. It also
+creates an auditable station-level table for methods sections and
+reproducibility.
+
+Supported download shortcuts are:
+
+```r
+download_bike_infrastructure("capital")   # DC, Arlington, Alexandria, Montgomery
+download_bike_infrastructure("divvy")     # Chicago
+download_bike_infrastructure("citibike")  # New York City
+download_bike_infrastructure("baywheels") # nine-county San Francisco Bay Area
+```
+
+Check the exact source and coverage before analysis:
+
+```r
+available_bike_infrastructure_sources()
+```
+
+This creates variables such as:
+
+- `start_bikeinfra_250m_m` and `end_bikeinfra_250m_m`;
+- `start_protected_bikeinfra_500m_m`;
+- `start_trail_500m_m`;
+- `start_any_protected_500m`; and
+- `start_nearest_bikeinfra_m`.
+
+These are station-area exposure variables. They should be interpreted as bike
+infrastructure availability near the start or end station, not proof that a
+rider used a specific bike lane or trail.
+
+Capital Bikeshare and Bay Wheels are regional systems. The Capital default now
+combines official layers for Washington, DC, Arlington, Alexandria, and
+Montgomery County. Prince George's County is not included yet because a clearly
+official existing bicycle-infrastructure line layer still needs to be selected.
+The Bay Wheels default uses MTC's regional bike-facilities layer, which covers
+the nine-county San Francisco Bay Area, including San Francisco, Oakland,
+Berkeley, and San José.
+
 ## Working with another system
 
 Only the `system` argument and destination need to change:

@@ -1,3 +1,33 @@
+# bikerentaldata 0.4.3
+
+- Added `build_station_infrastructure_exposure()` to compute and optionally
+  cache reusable station-level infrastructure exposure tables.
+- Added `add_station_infrastructure_exposure()` to join cached station-level
+  exposure tables back to trip records.
+- Updated `add_bike_infrastructure_exposure()` to use the station-level
+  workflow internally while preserving the one-step interface.
+- Added `summarize_station_infrastructure_coverage()` to audit station
+  coordinate and station-exposure coverage.
+- Documented planned regional infrastructure coverage for Capital Bikeshare
+  and Bay Wheels beyond the current Washington, DC and San Francisco defaults.
+
+# bikerentaldata 0.4.2
+
+- Added `download_bike_infrastructure()` for official open-data bicycle
+  infrastructure layers for Capital Bikeshare/DC, Divvy/Chicago, Citi
+  Bike/NYC, and Bay Wheels/San Francisco.
+- Added `available_bike_infrastructure_sources()` to document source URLs,
+  facility-type columns, and current coverage notes.
+- `add_bike_infrastructure_exposure()` now reuses facility metadata attached
+  to layers downloaded by `download_bike_infrastructure()`.
+
+# bikerentaldata 0.4.1
+
+- Added `add_bike_infrastructure_exposure()` for station-area bike-lane,
+  protected-facility, trail, and nearest-facility exposure variables from an
+  `sf` line layer.
+- Added bike-infrastructure exposure fields to `trip_data_dictionary()`.
+
 # bikerentaldata 0.4.0
 
 - Added `build_multicity_data()` to download and combine multiple systems.

@@ -268,6 +268,18 @@ trip_data_dictionary <- function() {
     "weather_barometer_inhg", "double", "weather", "Daily mean altimeter pressure",
     "weather_visibility_miles", "double", "weather", "Daily mean visibility",
     "weather_precipitation_in", "double", "weather", "Reported daily precipitation",
-    "weather_conditions", "character", "weather", "Most frequent daily conditions"
+    "weather_conditions", "character", "weather", "Most frequent daily conditions",
+    "start_bikeinfra_250m_m", "double", "infrastructure", "Bike infrastructure length within 250 meters of the start station",
+    "end_bikeinfra_250m_m", "double", "infrastructure", "Bike infrastructure length within 250 meters of the end station",
+    "start_bikeinfra_500m_m", "double", "infrastructure", "Bike infrastructure length within 500 meters of the start station",
+    "end_bikeinfra_500m_m", "double", "infrastructure", "Bike infrastructure length within 500 meters of the end station",
+    "start_protected_bikeinfra_500m_m", "double", "infrastructure", "Protected bike infrastructure length within 500 meters of the start station",
+    "end_protected_bikeinfra_500m_m", "double", "infrastructure", "Protected bike infrastructure length within 500 meters of the end station",
+    "start_trail_500m_m", "double", "infrastructure", "Trail or shared-use path length within 500 meters of the start station",
+    "end_trail_500m_m", "double", "infrastructure", "Trail or shared-use path length within 500 meters of the end station",
+    "start_any_protected_500m", "logical", "infrastructure", "Any protected bike infrastructure within 500 meters of the start station",
+    "end_any_protected_500m", "logical", "infrastructure", "Any protected bike infrastructure within 500 meters of the end station",
+    "start_nearest_bikeinfra_m", "double", "infrastructure", "Straight-line distance from the start station to the nearest bike facility",
+    "end_nearest_bikeinfra_m", "double", "infrastructure", "Straight-line distance from the end station to the nearest bike facility"
   )
 }
