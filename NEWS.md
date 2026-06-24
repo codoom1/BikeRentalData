@@ -1,3 +1,9 @@
+# bikerentaldata 0.4.5
+
+- Expanded package-level help (`?bikerentaldata`) with bicycle
+  infrastructure source, exposure, cache, coverage, and interpretation
+  guidance.
+
 # bikerentaldata 0.4.4
 
 - Added `infrastructure_data_dictionary()` with detailed definitions and

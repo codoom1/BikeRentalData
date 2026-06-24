@@ -7,7 +7,7 @@ authors:
     given-names: Christopher
 repository-code: "https://github.com/codoom1/BikeRentalData"
 license: MIT
-version: 0.4.4
+version: 0.4.5
 preferred-citation:
   type: article
   title: "Modeling of the daily dynamics in bike rental system using weather and calendar conditions: A semi-parametric approach"

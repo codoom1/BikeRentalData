@@ -46,6 +46,35 @@ weekend, and observed U.S. federal holiday fields.
 stations. Weather represents the metro area, not a rider's exact route.
 }
 
+\section{Bicycle infrastructure exposure}{
+
+The package can download official bicycle infrastructure layers and compute
+station-area exposure variables. Use \code{\link[=download_bike_infrastructure]{download_bike_infrastructure()}} to get
+the supported infrastructure layer for a system, and
+\code{\link[=available_bike_infrastructure_sources]{available_bike_infrastructure_sources()}} to inspect the source, coverage
+area, jurisdiction, facility-type field, and caveats.
+
+Infrastructure exposure is measured around stations, not along the unknown
+rider route. For example, \code{start_bikeinfra_500m_m} is the total length of
+bicycle infrastructure within 500 meters of the trip's start station, and
+\code{start_nearest_bikeinfra_m} is the straight-line distance from the start
+station to the nearest bicycle facility. These variables should be
+interpreted as nearby infrastructure availability, not proof that a rider
+used a specific bike lane or trail.
+
+For large systems such as Citi Bike, use the station-level cache workflow:
+build a reusable station exposure table with
+\code{\link[=build_station_infrastructure_exposure]{build_station_infrastructure_exposure()}}, join it to trips with
+\code{\link[=add_station_infrastructure_exposure]{add_station_infrastructure_exposure()}}, and audit coverage with
+\code{\link[=summarize_station_infrastructure_coverage]{summarize_station_infrastructure_coverage()}}. The convenience wrapper
+\code{\link[=add_bike_infrastructure_exposure]{add_bike_infrastructure_exposure()}} performs the build-and-join workflow in
+one call and accepts a \code{cache_file} argument.
+
+Run \code{\link[=infrastructure_data_dictionary]{infrastructure_data_dictionary()}} for detailed definitions of the
+infrastructure variables and \code{\link[=trip_data_dictionary]{trip_data_dictionary()}} for the full
+standardized trip schema.
+}
+
 \section{Legacy support}{
 
 Archive structures vary by system and year. The standardizer supports the
@@ -70,6 +99,7 @@ to their source terms.
 \examples{
 available_systems()
 trip_data_dictionary()
+infrastructure_data_dictionary()
 
 \dontrun{
 archives <- available_trip_data("divvy")
@@ -80,12 +110,22 @@ paths <- download_trip_files(
   destination = "data/divvy"
 )
 trips <- load_trip_data(paths, system = "divvy", n_max = 1000)
+
+bike_lanes <- download_bike_infrastructure("divvy")
+station_exposure <- build_station_infrastructure_exposure(
+  trips,
+  bike_lanes,
+  cache_file = "data/cache/divvy_station_exposure.csv"
+)
+trips <- add_station_infrastructure_exposure(trips, station_exposure)
 }
 
 }
 \seealso{
 \code{\link[=available_systems]{available_systems()}}, \code{\link[=available_trip_data]{available_trip_data()}}, \code{\link[=download_trip_files]{download_trip_files()}},
-\code{\link[=load_trip_data]{load_trip_data()}}, \code{\link[=build_multicity_data]{build_multicity_data()}}, \code{\link[=trip_data_dictionary]{trip_data_dictionary()}}
+\code{\link[=load_trip_data]{load_trip_data()}}, \code{\link[=build_multicity_data]{build_multicity_data()}}, \code{\link[=trip_data_dictionary]{trip_data_dictionary()}},
+\code{\link[=download_bike_infrastructure]{download_bike_infrastructure()}}, \code{\link[=build_station_infrastructure_exposure]{build_station_infrastructure_exposure()}},
+\code{\link[=infrastructure_data_dictionary]{infrastructure_data_dictionary()}}
 }
 \author{
 \strong{Maintainer}: Christopher Odoom \email{odoomchristopher22@gmail.com}
