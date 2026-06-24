@@ -6,13 +6,17 @@
 \usage{
 infrastructure_data_dictionary(
   buffers_m = c(250, 500),
-  sides = c("start", "end")
+  sides = c("start", "end"),
+  format = c("readable", "tibble")
 )
 }
 \arguments{
 \item{buffers_m}{Numeric buffer distances, in meters.}
 
 \item{sides}{Station sides to describe: \code{"start"}, \code{"end"}, or both.}
+
+\item{format}{Output format. Use \code{"readable"} for console-friendly output
+or \code{"tibble"} for a regular data frame.}
 }
 \value{
 A tibble with variable names, units, level, and interpretation.
@@ -30,5 +34,6 @@ evidence that a rider traveled on a specific bike lane or trail.
 }
 \examples{
 infrastructure_data_dictionary()
+infrastructure_data_dictionary(format = "tibble")
 infrastructure_data_dictionary(buffers_m = c(250, 500, 1000))
 }

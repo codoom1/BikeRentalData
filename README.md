@@ -235,6 +235,7 @@ Check the exact source and coverage before analysis:
 ```r
 available_bike_infrastructure_sources()
 infrastructure_data_dictionary()
+infrastructure_data_dictionary(format = "tibble")
 ```
 
 ### Faster Citi Bike / large-city workflow

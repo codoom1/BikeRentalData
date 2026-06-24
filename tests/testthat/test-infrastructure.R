@@ -16,7 +16,8 @@ test_that("bike infrastructure source table covers supported systems", {
 test_that("infrastructure data dictionary describes generated variables", {
   dictionary <- infrastructure_data_dictionary(
     buffers_m = c(250, 500),
-    sides = c("start", "end")
+    sides = c("start", "end"),
+    format = "tibble"
   )
 
   expect_true("start_bikeinfra_250m_m" %in% dictionary$variable)
@@ -30,6 +31,9 @@ test_that("infrastructure data dictionary describes generated variables", {
     infrastructure_data_dictionary(buffers_m = 0),
     "positive distances"
   )
+  readable <- infrastructure_data_dictionary(sides = "start")
+  expect_s3_class(readable, "bikerental_infrastructure_dictionary")
+  expect_output(print(readable), "Variables describe station-area exposure")
 })
 
 test_that("bike infrastructure exposure adds station-area metrics", {

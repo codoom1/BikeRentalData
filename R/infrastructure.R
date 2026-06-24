@@ -144,6 +144,8 @@ available_bike_infrastructure_sources <- function() {
 #'
 #' @param buffers_m Numeric buffer distances, in meters.
 #' @param sides Station sides to describe: `"start"`, `"end"`, or both.
+#' @param format Output format. Use `"readable"` for console-friendly output
+#'   or `"tibble"` for a regular data frame.
 #'
 #' @return A tibble with variable names, units, level, and interpretation.
 #'
@@ -154,12 +156,15 @@ available_bike_infrastructure_sources <- function() {
 #'
 #' @examples
 #' infrastructure_data_dictionary()
+#' infrastructure_data_dictionary(format = "tibble")
 #' infrastructure_data_dictionary(buffers_m = c(250, 500, 1000))
 #' @export
 infrastructure_data_dictionary <- function(
   buffers_m = c(250, 500),
-  sides = c("start", "end")
+  sides = c("start", "end"),
+  format = c("readable", "tibble")
 ) {
+  format <- match.arg(format)
   buffers_m <- sort(unique(as.numeric(buffers_m)))
   if (!length(buffers_m) || anyNA(buffers_m) || any(buffers_m <= 0)) {
     stop("`buffers_m` must contain positive distances in meters.", call. = FALSE)
@@ -184,7 +189,7 @@ infrastructure_data_dictionary <- function(
       ),
       interpretation = paste(
         "Smaller values indicate closer bicycle infrastructure near the",
-        side_label[[side]], "not route use."
+        paste0(side_label[[side]], "; this is not route use.")
       )
     )
   })
@@ -201,11 +206,11 @@ infrastructure_data_dictionary <- function(
         "bike infrastructure layer + station coordinates",
         paste(
           "Total clipped length of all bicycle infrastructure within",
-          buffer_m, "meters of the", side_label[[side]], "."
+          buffer_m, "meters of the", side_label[[side]] |> paste0(".")
         ),
         paste(
           "Higher values indicate more nearby bicycle infrastructure around the",
-          side_label[[side]], "not the distance ridden by a user."
+          paste0(side_label[[side]], "; this is not the distance ridden by a user.")
         ),
         paste0(side, "_protected_bikeinfra_", suffix, "_m"),
         "double",
@@ -215,7 +220,7 @@ infrastructure_data_dictionary <- function(
         paste(
           "Total clipped length of protected or separated bicycle",
           "infrastructure within", buffer_m, "meters of the",
-          side_label[[side]], "."
+          side_label[[side]] |> paste0(".")
         ),
         paste(
           "Higher values indicate more nearby protected/separated bicycle",
@@ -228,7 +233,7 @@ infrastructure_data_dictionary <- function(
         "derived from protected infrastructure length",
         paste(
           "Indicator that protected or separated bicycle infrastructure exists",
-          "within", buffer_m, "meters of the", side_label[[side]], "."
+          "within", buffer_m, "meters of the", side_label[[side]] |> paste0(".")
         ),
         paste(
           "TRUE means at least one protected/separated facility is nearby; it",
@@ -242,7 +247,7 @@ infrastructure_data_dictionary <- function(
         paste(
           "Total clipped length of trails, greenways, sidepaths, or",
           "shared-use paths within", buffer_m, "meters of the",
-          side_label[[side]], "."
+          side_label[[side]] |> paste0(".")
         ),
         paste(
           "Higher values indicate more nearby trail/shared-use path exposure.",
@@ -252,7 +257,42 @@ infrastructure_data_dictionary <- function(
     })
   })
 
-  dplyr::bind_rows(base, buffer_variables)
+  dictionary <- dplyr::bind_rows(base, buffer_variables)
+  if (format == "tibble") {
+    return(dictionary)
+  }
+  class(dictionary) <- c(
+    "bikerental_infrastructure_dictionary",
+    class(dictionary)
+  )
+  dictionary
+}
+
+#' @export
+print.bikerental_infrastructure_dictionary <- function(x, ...) {
+  cat("Bicycle infrastructure exposure dictionary\n")
+  cat("Variables describe station-area exposure, not actual route use.\n\n")
+
+  for (index in seq_len(nrow(x))) {
+    row <- x[index, ]
+    cat(row$variable, "\n", sep = "")
+    cat("  Type: ", row$type, "\n", sep = "")
+    cat("  Units: ", row$units, "\n", sep = "")
+    cat("  Level: ", row$level, "\n", sep = "")
+    cat("  Source: ", row$source, "\n", sep = "")
+    cat("  Meaning: ", row$description, "\n", sep = "")
+    cat("  Interpret as: ", row$interpretation, "\n", sep = "")
+    if (index < nrow(x)) {
+      cat("\n")
+    }
+  }
+
+  cat(
+    "\nTip: use infrastructure_data_dictionary(format = \"tibble\") ",
+    "for a data-frame version.\n",
+    sep = ""
+  )
+  invisible(x)
 }
 
 .safe_filename <- function(x) {

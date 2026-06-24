@@ -1,3 +1,9 @@
+# bikerentaldata 0.4.6
+
+- Improved `infrastructure_data_dictionary()` console output with a readable
+  one-variable-at-a-time print format while preserving tibble output via
+  `format = "tibble"`.
+
 # bikerentaldata 0.4.5
 
 - Expanded package-level help (`?bikerentaldata`) with bicycle

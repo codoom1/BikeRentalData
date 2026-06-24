@@ -1,4 +1,5 @@
 S3method(print,bikerental_system_info)
+S3method(print,bikerental_infrastructure_dictionary)
 export(add_calendar_variables)
 export(add_bike_infrastructure_exposure)
 export(add_station_infrastructure_exposure)
