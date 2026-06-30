@@ -139,4 +139,9 @@ trips <- add_station_infrastructure_exposure(trips, station_exposure)
 \author{
 \strong{Maintainer}: Christopher Odoom \email{odoomchristopher22@gmail.com}
 
+Authors:
+\itemize{
+  \item Christopher Odoom \email{odoomchristopher22@gmail.com}
+}
+
 }
